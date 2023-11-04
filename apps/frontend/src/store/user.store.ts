@@ -12,4 +12,8 @@ export const useUserStore = create<IUser>(set => ({
 	username: ``,
 	avatar: ``,
 	role: ``,
+	setLogined: (logined: boolean) => set({ logined }),
+	setUsername: (username: string) => set({ username }),
+	setAvatar: (avatar: string) => set({ avatar }),
+	setRole: (role: string) => set({ role }),
 }));

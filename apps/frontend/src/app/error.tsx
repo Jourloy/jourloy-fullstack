@@ -19,11 +19,11 @@ export default function Error({error, reset}: {error: Error; reset: () => void})
 							reset();
 						}}
 						variant={`outline`}
-						width={`100%`}
+						w={`100%`}
 					>
 						<p className={`w-full text-center`}>Попробовать снова</p>
 					</Button>
-					<Button redirect={`/`} width={`100%`}>
+					<Button redirect={`/`} w={`100%`}>
 						<p className={`w-full text-center`}>Вернуться на главную</p>
 					</Button>
 				</Card>

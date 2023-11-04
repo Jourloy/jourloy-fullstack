@@ -8,7 +8,7 @@ export default function Home() {
 	return (
 		<main className={`dark flex p-[20px] w-full h-[calc(95dvh)] justify-center items-center`}>
 			<div className={`grid grid-cols-12 w-full max-w-[850px] gap-5 justify-items-center`}>
-				<div className={`col-span-12 md:col-span-4 max-[640px]:hidden sm:hidden md:block`}>
+				<div className={`col-span-12 md:col-span-4 md:block`}>
 					<Image
 						src={`https://s.jourloy.com/web-images/me.png`}
 						alt={`Me :)`}
@@ -45,12 +45,16 @@ export default function Home() {
 
 				<Divider className={`col-span-12`} color={`neutral`} />
 
-				<Card className={`col-span-12 grid grid-cols-2 gap-5 w-full`} variant={`outline`} withBorder>
+				<Card className={`col-span-12 flex flex-col w-full`} variant={`outline`} withBorder>
 					<h3 className={`col-span-2 text-[40px] text-center`}>Мои проекты</h3>
 
-					<CustomButton color={`black`}>Трекер</CustomButton>
+					<div className={`flex flex-col md:flex-row w-full md:space-x-5 space-y-5 md:space-y-0`}>
+						<CustomButton color={`black`} fullWidth>Трекер</CustomButton>
 
-					<CustomButton color={`black`} redirect={`/keyboard`}>Клавиатура</CustomButton>
+						<CustomButton color={`black`} fullWidth redirect={`/keyboard`}>
+							Клавиатура
+						</CustomButton>
+					</div>
 				</Card>
 			</div>
 		</main>
