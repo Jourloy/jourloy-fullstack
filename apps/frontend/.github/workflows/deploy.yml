@@ -1,0 +1,35 @@
+name: Deploy to server
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    deploy:
+        name: Deploy
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+            - name: Pull and run
+              uses: appleboy/ssh-action@master
+              with:
+                  host: ${{ secrets.HOST }}
+                  username: ${{ secrets.USERNAME }}
+                  port: ${{ secrets.PORT }}
+                  password: ${{ secrets.PASSWORD }}
+                  script_stop: true
+                  script: |
+                      cd ${{ secrets.FOLDER }}
+                      pm2 stop frontend
+                      > .env
+                      echo VITE_NODE_ENV=${{ secrets.VITE_NODE_ENV }} >> .env
+                      echo VITE_DEPLOYMENT_MODE=${{ secrets.VITE_DEPLOYMENT_MODE }} >> .env
+                      echo VITE_BACKEND_PORT=${{ secrets.VITE_BACKEND_PORT }} >> .env
+                      echo VITE_SENTRY_DSN=${{ secrets.VITE_SENTRY_DSN }} >> .env
+                      echo DOCKER_PORT=${{ secrets.DOCKER_PORT }} >> .env
+                      git pull
+                      yarn
+                      pm2 --name frontend serve --spa ./dist

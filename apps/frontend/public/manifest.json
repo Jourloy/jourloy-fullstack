@@ -1,0 +1,12 @@
+{
+	"name": "JOURLOY",
+	"short_name": "JOURLOY",
+	"description": "Удобные инструменты для жизни и работы",
+	"background_color": "#FFFFFF",
+	"display": "fullscreen",
+	"shortcuts": {},
+	"theme_color": "#0362FC",
+	"start_url": "/",
+	"scope": "/",
+	"screenshots": {}
+  }

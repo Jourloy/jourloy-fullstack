@@ -10,16 +10,19 @@
 
 <p align="center">Main repository for frontend</p>
 
-## Description
-
-This is new version of Frontend based on [Next.js](https://nextjs.org/) and [TaildwinCSS](https://tailwindcss.com). In future this branch will be main
-
 ## Getting Started
 
 ### Installation
 
 ```bash
-$ yarn install
+# bun
+$ bun install
+
+# yarn
+$ yarn
+
+# npm
+$ npm install
 ```
 
 ### .env
@@ -38,12 +41,17 @@ If you want start server locally, so you should set `DEPLOYMENT_MODE` to `local`
 $ docker-compose up -d
 ```
 
-#### Yarn
+#### Bun
 
 ```bash
 # Developmemt
-$ yarn dev
+$ bun run dev
 
-# Production (Not recommend)
-$ yarn start
+# preview
+$ bun run build
+$ bun run preview
+
+# Production
+$ bun run build
+$ bun run start
 ```
