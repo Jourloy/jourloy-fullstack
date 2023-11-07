@@ -1,19 +1,6 @@
-import {
-	Button,
-	Card,
-	Divider,
-	Grid,
-	Title,
-	Image,
-	Text,
-	Group,
-	ActionIcon,
-	Flex,
-	Center,
-	Space,
-} from "@mantine/core";
 import {useDocumentTitle} from "@mantine/hooks";
-import {IconBrandDiscord, IconBrandGithub, IconBrandTwitch} from "@tabler/icons-react";
+import {ActionIcon, Button, Card, Divider, Image} from "@mantine/core";
+import {IconBrandDiscord, IconBrandTwitch, IconBrandGithub} from "@tabler/icons-react";
 import {useNavigate} from "react-router-dom";
 
 export default function Main() {
@@ -21,119 +8,65 @@ export default function Main() {
 
 	const navigate = useNavigate();
 
+	const onKeyboard = () => {
+		navigate(`/keyboard`);
+	};
+
 	return (
-		<Flex justify={`center`} py={20} px={20}>
-			<Grid maw={`850px`} w={`100%`} m={0} p={0} align={`center`} ml={`0px`}>
-				<Grid.Col sm={12} md={4}>
-					<Image
-						src={`https://s.jourloy.com/web-images/me.png`}
-						withPlaceholder
-						radius={`md`}
-					/>
-				</Grid.Col>
+		<main className={`dark flex p-[20px] w-full h-[calc(95dvh)] justify-center items-center`}>
+			<div className={`grid grid-cols-12 w-full max-w-[850px] gap-5 justify-items-center`}>
+				<div className={`col-span-12 md:col-span-4 md:block`}>
+					<Image src={`https://s.jourloy.com/web-images/me.png`} radius={`md`} />
+				</div>
 
-				<Grid.Col sm={12} md={8} mah={`284px`} h={`100%`}>
-					<Card withBorder h={"100%"}>
-						<Center h={"100%"}>
-							<Flex direction={"column"} align={"center"} gap={"xs"}>
-								<Title tt={`uppercase`}>✌️ Это я ✌️</Title>
+				<Card
+					className={`col-span-12 md:col-span-8 flex flex-col justify-center h-full w-full`}
+					withBorder
+				>
+					<h2 className={`text-center text-[50px]`}>✌️ Привет ✌️</h2>
+					<Divider className={`px-[20px] my-[10px]`} w={`100%`} />
+					<p className={`text-center`}>
+						Я мужчина, муж, брат, сын, программист и просто хороший человек
+					</p>
+					<div className={`flex space-x-3 mt-[15px] justify-center`}>
+						<a href={`https://discord.gg/PB8rdcXyRR`}>
+							<ActionIcon radius={`xl`} variant={`subtle`} size={`lg`}>
+								<IconBrandDiscord color={`#5865F2`} />
+							</ActionIcon>
+						</a>
 
-								<Divider w={"100%"} />
+						<a href={`https://twitch.tv/jourloy`}>
+							<ActionIcon radius={`xl`} variant={`subtle`} size={`lg`}>
+								<IconBrandTwitch color={`#6441A4`} />
+							</ActionIcon>
+						</a>
 
-								<Text>
-									Мужчина, муж, брат, сын, программист и просто хороший человек
-								</Text>
+						<a href={`https://github.com/jourloy`}>
+							<ActionIcon radius={`xl`} variant={`subtle`} size={`lg`}>
+								<IconBrandGithub color={`#000000`} />
+							</ActionIcon>
+						</a>
+					</div>
+				</Card>
 
-								<Group>
-									<ActionIcon
-										component={"a"}
-										href={`https://discord.gg/PB8rdcXyRR`}
-										color={"indigo.5"}
-									>
-										<IconBrandDiscord />
-									</ActionIcon>
+				<Divider className={`col-span-12`} w={`100%`} />
 
-									<ActionIcon
-										component={"a"}
-										href={`https://twitch.tv/jourloy`}
-										color={"violet.5"}
-									>
-										<IconBrandTwitch />
-									</ActionIcon>
+				<Card className={`col-span-12 flex flex-col w-full`} withBorder>
+					<h3 className={`text-[40px] text-center`}>Мои проекты</h3>
 
-									<ActionIcon
-										component={"a"}
-										href={"https://github.com/jourloy"}
-										color={`dark`}
-									>
-										<IconBrandGithub />
-									</ActionIcon>
-								</Group>
-							</Flex>
-						</Center>
-					</Card>
-				</Grid.Col>
+					<div
+						className={`flex flex-col md:flex-row w-full md:space-x-5 space-y-5 md:space-y-0 mt-5`}
+					>
+						<Button color={`black`} fullWidth>
+							Трекер
+						</Button>
 
-				<Grid.Col>
-					<Divider />
-				</Grid.Col>
-
-				<Grid.Col>
-					<Card withBorder w={`100%`} h={`100%`}>
-						<Grid>
-							<Grid.Col>
-								<Title align={`center`}>Мои проекты</Title>
-							</Grid.Col>
-
-							<Grid.Col>
-								<Divider w={"100%"} />
-							</Grid.Col>
-
-							<Grid.Col md={6} sm={12}>
-								<Button fullWidth onClick={() => navigate(`/tracker`)}>
-									Денежный трекер
-								</Button>
-							</Grid.Col>
-
-							<Grid.Col md={6} sm={12}>
-								<Button fullWidth onClick={() => navigate(`/keyboard`)}>
-									Клавиатура
-								</Button>
-							</Grid.Col>
-						</Grid>
-					</Card>
-				</Grid.Col>
-
-				<Grid.Col>
-					<Card withBorder>
-						<Grid>
-							<Grid.Col>
-								<Title align={`center`}>Инструменты</Title>
-							</Grid.Col>
-
-							<Grid.Col>
-								<Divider w={"100%"} />
-							</Grid.Col>
-
-							<Grid.Col md={6} sm={12}>
-								<Button fullWidth onClick={() => navigate(`/party`)} variant={`outline`}>
-									Party калькулятор
-								</Button>
-							</Grid.Col>
-
-							<Grid.Col md={6} sm={12}>
-								<Button fullWidth onClick={() => navigate(`/coding`)} variant={`outline`}>
-									Coding
-								</Button>
-							</Grid.Col>
-						</Grid>
-					</Card>
-				</Grid.Col>
-
-				<Grid.Col>
-					<Space h={`45px`} />
-				</Grid.Col>
-			</Grid>
-		</Flex>
+						<Button color={`black`} fullWidth onClick={onKeyboard}>
+							Клавиатура
+						</Button>
+					</div>
+				</Card>
+			</div>
+		</main>
 	);
 }
