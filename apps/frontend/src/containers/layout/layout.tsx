@@ -1,10 +1,10 @@
 import {AppShell} from "@mantine/core";
 import {useEffect, useState} from "react";
-import HeaderComponent from "../components/layout/header";
-import {store} from "../store/store";
-import Blocked from "../pages/blocked";
-import FooterComponent from "../components/layout/footer";
-import DefaultLoading from "../components/layout/loading";
+import HeaderComponent from "../../components/layout/header";
+import {store} from "../../store/store";
+import Blocked from "../../pages/blocked";
+import FooterComponent from "../../components/layout/footer";
+import DefaultLoading from "../../components/layout/loading";
 
 type TProps = {
 	needAuth?: boolean;
