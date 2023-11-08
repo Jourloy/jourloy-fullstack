@@ -1,297 +1,192 @@
-import {useEffect, useState} from "react";
-import {useNavigate} from "react-router-dom";
-import TrackerAPI from "./api";
-import {
-	Paper,
-	Group,
-	Flex,
-	Grid,
-	Center,
-	Title,
-	Divider,
-	Button,
-	Text,
-	Stack,
-	Card,
-	Progress,
-} from "@mantine/core";
-import ScrollHint from "../../components/layout/scrollHint";
-import {store} from "../../store/store";
-import {useDocumentTitle} from "@mantine/hooks";
-import HistorySpend from "./app/@components/spend";
+import "./index.scss";
+import Section from "../../components/layout/Section";
+import {Button, Card, Divider, Progress, Skeleton} from "@mantine/core";
+import ScrollHint from "../../components/layout/ScrollHint";
+import CustomCard from "../../components/layout/CustomCard";
+import SpendComponent from "./components/spend";
+import {spends} from "./mock/spends";
 import {formatter} from "../../context";
-import PlannedSpend from "./app/@components/planned";
-import ErrorNotification from "../../components/logical/notification/error.notification";
 
 export default function TrackerIndex() {
-	useDocumentTitle(`Трекер`);
-
-	const navigate = useNavigate();
-	const backend = new TrackerAPI();
-
-	const [tracker, setTracker] = useState(false);
-	const [block, setBlock] = useState(false);
-
-	const toTracker = () => {
-		if (block) return;
-
-		if (!store.getState().userReducer.logined) navigate(`/login`);
-		else if (tracker) navigate(`/tracker/app`);
-		else navigate(`/tracker/create`);
-	};
-
-	useEffect(() => {
-		const source = backend.getSource();
-
-		backend
-			.autoUpdateTracker()
-			.then(s => {
-				if (s >= 400 && s < 500) setTracker(false);
-				else setTracker(true);
-			})
-			.catch(() => {
-				setTracker(false);
-				ErrorNotification({message: `Сервер не доступен, попробуй позже`});
-				setBlock(true);
-			});
-
-		return () => source.cancel();
-	}, []);
-
 	return (
-		<Paper>
-			<Paper
-				style={{
-					position: `absolute`,
-					top: `90dvh`,
-				}}
-				w={`100%`}
-				ml={`-16px`}
-			>
-				<Group position={`center`} w={`100%`}>
-					<ScrollHint />
-				</Group>
-			</Paper>
-			<Paper>
-				<Flex justify={`center`}>
-					<Grid maw={`850px`} w={`100%`} gutter={`xl`}>
-						<Grid.Col>
-							<Paper h={`calc(100dvh - 80px)`}>
-								<Center h={`100%`} w={`100%`}>
-									<Stack>
-										<Title align={`center`} tt={`uppercase`} order={1}>
-											Ты еще не {` `}
-											<Text
-												span
-												variant={`gradient`}
-												gradient={{from: `yellow`, to: `red`}}
-											>
-												следишь
-											</Text>
-											{` `} за своими расходами?
-										</Title>
-
-										<Text
-											align={`center`}
-											color={`dimmed`}
-											size={`18px`}
-											mt={`-10px`}
-										>
-											Все расходы и доходы прямо перед глазами
-										</Text>
-
-										<Divider
-											label={
-												<Text color={`red`} size={`15px`}>
-													и бесплатно
-												</Text>
-											}
-											labelPosition={`center`}
-											mt={`-10px`}
-										/>
-
-										<Button fullWidth onClick={toTracker}>
-											<Text>
-												Начать пользоваться {` `}
-												<Text span color={`red`}>
-													[ БЕТА ]
-												</Text>
-											</Text>
-										</Button>
-									</Stack>
-								</Center>
-							</Paper>
-						</Grid.Col>
-
-						<Grid.Col>
-							<Stack>
-								<Title align={`center`} order={1} tt={`uppercase`}>
-									Следить за расходами очень важно
-								</Title>
-								<Text
-									align={`center`}
-									color={`dimmed`}
-									mt={`-10px`}
-									size={`18px`}
-									weight={800}
+		<main>
+			<Section className={`flex flex-col justify-center items-center min-h-[1000px] bg-black p-5`}>
+				<div className={`absolute flex justify-center top-[calc(97dvh)]`}>
+					<ScrollHint pos={0.5} />
+				</div>
+				<h3 className={`text-center uppercase text-[25px] text-white`}>
+					Теперь все расходы под
+				</h3>
+				<h1 className={`text-center uppercase text-amber-500 text-[100px] mt-[-20px]`}>
+					Контролем
+				</h1>
+				<Divider
+					label={<p className={`text-[18px]`}>твоим и тотальным</p>}
+					labelPosition={`center`}
+					className={`w-full`}
+				/>
+				<div className={`flex text-center text-neutral-400 text-[20px] transition-all`}>
+					<div>
+						<div className={`text-white`}>
+							Никогда еще не было так просто {` `}
+							<div
+								className={`relative inline-grid grid-cols-1 grid-rows-1 gap-12 overflow-hidden ml-[10px]`}
+							>
+								<span
+									className={`animate-word col-span-full row-span-full text-amber-500 font-extrabold`}
 								>
-									Но как это сделать лучше всего?
-								</Text>
-								<Divider />
-							</Stack>
-						</Grid.Col>
+									Тратить
+								</span>
+								<span
+									className={`animate-word-delay-1 col-span-full row-span-full text-indigo-500 font-extrabold`}
+								>
+									Считать
+								</span>
+								<span
+									className={`animate-word-delay-2 col-span-full row-span-full text-green-500 font-extrabold`}
+								>
+									Копить
+								</span>
+								<span
+									className={`animate-word-delay-3 col-span-full row-span-full text-cyan-500 font-extrabold`}
+								>
+									Следить
+								</span>
+								<span
+									className={`animate-word-delay-4 col-span-full row-span-full text-red-500 font-extrabold`}
+								>
+									Мечтать
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
 
-						<Grid.Col md={4} sm={12} order={1}>
-							<Card withBorder h={`100%`}>
-								<Stack>
-									<Title order={3}>Представь себе инструмент</Title>
+				<div
+					className={`flex flex-col md:flex-row md:space-x-5 space-y-5 md:space-y-0 mt-[100px]`}
+				>
+					<CustomCard
+						className={`flex flex-col items-center justify-between space-y-3 w-[300px] h-full opacity-50`}
+						color={`bg-white`}
+					>
+						<div className={`w-full flex flex-col space-y-3`}>
+							<Skeleton height={20} radius={`sm`} className={`mt-[8px]`} color={`green`} />
+							<Divider className={`w-full`} />
+							<div className={`w-full flex flex-row space-x-3`}>
+								<Skeleton height={10} circle />
+								<Skeleton height={10} radius={`xs`} />
+							</div>
+							<div className={`w-full flex flex-row space-x-3`}>
+								<Skeleton height={10} circle />
+								<Skeleton height={10} radius={`xs`} />
+							</div>
+							<div className={`w-full flex flex-row space-x-3`}>
+								<Skeleton height={10} circle />
+								<Skeleton height={10} radius={`xs`} />
+							</div>
+						</div>
 
-									<Text>Который хранит всю твою историю доходов и расходов</Text>
-								</Stack>
-							</Card>
-						</Grid.Col>
+						<Button fullWidth variant={`white`} color={`black`} disabled>
+							В разработке
+						</Button>
+					</CustomCard>
+					<CustomCard
+						withBorder
+						className={`flex flex-col space-y-3 w-[300px] h-full`}
+						color={`bg-white border-[3px] border-cyan-500 shadow-xl shadow-cyan-500/50`}
+					>
+						<h2 className={`text-[20px] text-center`}>Временно бесплатно</h2>
+						<Divider className={`w-full`} />
+						<p>
+							На данном этапе все имеющиеся функции в трекере доступны всем без исключения
+						</p>
+						<p>В будущем определенный набор функций станет доступным только по подписке</p>
+						<p>
+							Заранее появится оповещение и возможность использование скидки на первую
+							подписку
+						</p>
+						<Button fullWidth color={`black`}>
+							Начать пользоваться
+						</Button>
+					</CustomCard>
+					<CustomCard
+						className={`flex flex-col items-center justify-between space-y-3 w-[300px] h-full opacity-50`}
+						color={`bg-white`}
+					>
+						<div className={`w-full flex flex-col space-y-3`}>
+							<Skeleton height={20} radius={`sm`} className={`mt-[8px]`} color={`green`} />
+							<Divider className={`w-full`} />
+							<div className={`w-full flex flex-row space-x-3`}>
+								<Skeleton height={10} circle />
+								<Skeleton height={10} radius={`xs`} />
+							</div>
+							<div className={`w-full flex flex-row space-x-3`}>
+								<Skeleton height={10} circle />
+								<Skeleton height={10} radius={`xs`} />
+							</div>
+							<div className={`w-full flex flex-row space-x-3`}>
+								<Skeleton height={10} circle />
+								<Skeleton height={10} radius={`xs`} />
+							</div>
+						</div>
 
-						<Grid.Col md={8} sm={12} order={2}>
-							<Card withBorder>
-								<Stack spacing={0}>
-									<HistorySpend
-										spend={{
-											id: 1,
-											cost: 32000,
-											category: `work`,
-											createdAt: new Date(Date.now()).toString(),
-											updatedAt: new Date(Date.now()).toString(),
-										}}
-										index={1}
-										length={1}
-									/>
-									<HistorySpend
-										spend={{
-											id: 1,
-											cost: -1200,
-											category: `food`,
-											createdAt: new Date(
-												Date.now() - 24 * 60 * 60 * 1000
-											).toString(),
-											updatedAt: new Date(
-												Date.now() - 24 * 60 * 60 * 1000
-											).toString(),
-										}}
-										index={1}
-										length={1}
-									/>
-								</Stack>
-							</Card>
-						</Grid.Col>
+						<Button fullWidth variant={`white`} color={`black`} disabled>
+							В разработке
+						</Button>
+					</CustomCard>
+				</div>
+			</Section>
 
-						<Grid.Col md={8} sm={12} orderMd={3} orderSm={4}>
-							<Card withBorder h={`100%`}>
-								<Center h={`100%`} w={`100%`}>
-									<Stack spacing={0} w={`100%`}>
-										<Flex align={`center`} justify={`space-between`}>
-											<Title order={2}>Дневной бюджет</Title>
-											<Title order={2}>{formatter.format(1200)}</Title>
-										</Flex>
+			<Section
+				className={`flex flex-col justify-center items-center min-h-[1000px] p-5 space-y-5`}
+			>
+				<h1 className={`text-center uppercase text-[40px]`}>Следить за расходами очень важно</h1>
+				<h2 className={`text-center text-[25px] text-neutral-500`}>
+					Но как это сделать лучше всего?
+				</h2>
+				<Divider className={`w-full my-[20px]`} />
+				<div
+					className={`flex flex-col md:flex-row max-w-[850px] w-full justify-between space-x-5`}
+				>
+					<Card withBorder className={`flex flex-col w-full md:max-w-[300px]`}>
+						<h2 className={`text-[25px] mb-[10px]`}>Представь себе инструмент</h2>
+						<p>Который хранит всю твою историю доходов и расходов</p>
+					</Card>
+					<Card withBorder className={`flex flex-col space-y-5 w-full`}>
+						<SpendComponent
+							spend={{...spends[0].spend}}
+							length={spends[0].length}
+							index={spends[0].index}
+						/>
 
-										<Divider my={`10px`} />
-
-										<Progress h={`15px`} value={80} color={`green`} />
-
-										<Flex align={`center`} justify={`space-between`}>
-											<Text c={`dimmed`}>Осталось дней: 34</Text>
-											<Text c={`dimmed`}>Бюджет: 40800</Text>
-										</Flex>
-									</Stack>
-								</Center>
-							</Card>
-						</Grid.Col>
-
-						<Grid.Col md={4} sm={12} orderMd={4} orderSm={3}>
-							<Card withBorder h={`100%`}>
-								<Stack>
-									<Title order={3}>Представь себе инструмент</Title>
-
-									<Text>Который расчитывает лимит денег на сегодня или неделю</Text>
-								</Stack>
-							</Card>
-						</Grid.Col>
-
-						<Grid.Col md={4} sm={12} order={5}>
-							<Card withBorder h={`100%`}>
-								<Stack>
-									<Title order={3}>Представь себе инструмент</Title>
-
-									<Text>Который напоминает о том, что нужно оплатить</Text>
-								</Stack>
-							</Card>
-						</Grid.Col>
-
-						<Grid.Col md={8} sm={12} order={6}>
-							<Card withBorder>
-								<Stack spacing={0}>
-									<PlannedSpend
-										spend={{
-											id: 1,
-											cost: -650,
-											category: `housing`,
-											date: new Date(Date.now()).toString(),
-											createdAt: new Date(Date.now()).toString(),
-											updatedAt: new Date(Date.now()).toString(),
-										}}
-										index={1}
-										length={1}
-									/>
-									<PlannedSpend
-										spend={{
-											id: 1,
-											cost: -3000,
-											category: `health`,
-											date: new Date(Date.now() + 24 * 60 * 60 * 1000).toString(),
-											createdAt: new Date(
-												Date.now() - 24 * 60 * 60 * 1000
-											).toString(),
-											updatedAt: new Date(
-												Date.now() - 24 * 60 * 60 * 1000
-											).toString(),
-										}}
-										index={1}
-										length={1}
-									/>
-								</Stack>
-							</Card>
-						</Grid.Col>
-
-						<Grid.Col order={7}>
-							<Card withBorder>
-								<Stack>
-									<Title align={`center`}>Представь себе инструмент</Title>
-
-									<Text align={`center`}>
-										Который постоянно развивается и в нем постоянно появляются новые
-										инструменты для более удобного контроля бюджета. Если чего-то не
-										хватает, то с радостью готовы получить предложение об улучшении
-									</Text>
-								</Stack>
-							</Card>
-						</Grid.Col>
-
-						<Grid.Col order={8}>
-							<Divider />
-						</Grid.Col>
-
-						<Grid.Col mb={`100px`} order={9}>
-							<Button fullWidth onClick={toTracker}>
-								<Text>
-									Начать пользоваться {` `}
-									<Text span color={`red`}>
-										[ БЕТА ]
-									</Text>
-								</Text>
-							</Button>
-						</Grid.Col>
-					</Grid>
-				</Flex>
-			</Paper>
-		</Paper>
+						<SpendComponent
+							spend={{...spends[1].spend}}
+							length={spends[0].length}
+							index={spends[0].index}
+						/>
+					</Card>
+				</div>
+				<div
+					className={`flex flex-col md:flex-row max-w-[850px] w-full justify-between space-x-5`}
+				>
+					<Card withBorder className={`flex flex-col space-y-3 w-full`}>
+						<div className={`flex flex-row justify-between`}>
+							<h2 className={`text-[25px]`}>Дневной бюджет</h2>
+							<h2 className={`text-[25px]`}>{formatter.format(1200)}</h2>
+						</div>
+						<Divider className={`w-full`} />
+						<Progress value={88} h={`15px`} color={`green`} />
+						<div className={`flex flex-row justify-between`}>
+							<p className={`text-neutral-500`}>Осталось дней: 34</p>
+							<p className={`text-neutral-500`}>Бюджет: {formatter.format(40800)}</p>
+						</div>
+					</Card>
+					<Card withBorder className={`flex flex-col w-full md:max-w-[300px]`}>
+						<h2 className={`text-[25px] mb-[10px]`}>Представь себе инструмент</h2>
+						<p>Который расчитывает лимит денег на сегодня или неделю</p>
+					</Card>
+				</div>
+			</Section>
+		</main>
 	);
 }
