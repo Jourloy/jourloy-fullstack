@@ -2,9 +2,16 @@ import {useDocumentTitle} from "@mantine/hooks";
 import Section from "../../components/layout/Section";
 import GhostComponent from "./components/ghost";
 import {Button, Card} from "@mantine/core";
+import {useNavigate} from "react-router-dom";
 
 export function Page404() {
 	useDocumentTitle(`404`);
+
+	const navigate = useNavigate();
+
+	const toMain = () => {
+		navigate(`/`);
+	};
 
 	return (
 		<main>
@@ -19,7 +26,13 @@ export function Page404() {
 						<GhostComponent />
 					</div>
 					<p>Мы не нашли такую страницу</p>
-					<Button fullWidth className={`mt-[15px]`} variant={`outline`} color={`black`}>
+					<Button
+						fullWidth
+						className={`mt-[15px]`}
+						variant={`outline`}
+						color={`black`}
+						onClick={toMain}
+					>
 						На главную
 					</Button>
 				</Card>
