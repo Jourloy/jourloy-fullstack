@@ -6,8 +6,11 @@ import CustomCard from "../../components/layout/CustomCard";
 import SpendComponent from "./components/spend";
 import {spends} from "./mock/spends";
 import {formatter} from "../../context";
+import {useDocumentTitle} from "@mantine/hooks";
 
 export default function TrackerIndex() {
+	useDocumentTitle(`Трекер`);
+
 	return (
 		<main>
 			<Section className={`flex flex-col justify-center items-center min-h-[1000px] bg-black p-5`}>
