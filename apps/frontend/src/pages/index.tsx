@@ -12,6 +12,10 @@ export default function Main() {
 		navigate(`/keyboard`);
 	};
 
+	const onTracker = () => {
+		navigate(`/tracker`);
+	};
+
 	return (
 		<main className={`dark flex p-[20px] w-full h-[calc(95dvh)] justify-center items-center`}>
 			<div className={`grid grid-cols-12 w-full max-w-[850px] gap-5 justify-items-center`}>
@@ -57,7 +61,7 @@ export default function Main() {
 					<div
 						className={`flex flex-col md:flex-row w-full md:space-x-5 space-y-5 md:space-y-0 mt-5`}
 					>
-						<Button color={`black`} fullWidth>
+						<Button color={`black`} fullWidth onClick={onTracker}>
 							Трекер
 						</Button>
 
