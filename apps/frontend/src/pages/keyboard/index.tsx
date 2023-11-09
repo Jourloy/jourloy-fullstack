@@ -9,11 +9,17 @@ import FeatureCards from "./components/featureCards";
 import {motion} from "framer-motion";
 import {IconUser} from "@tabler/icons-react";
 import BuyButton from "./components/buy";
+import {useDocumentTitle} from "@mantine/hooks";
 
 export default function KeyboardIndex() {
+	useDocumentTitle(`Framework`);
+
 	return (
 		<main>
 			<Section className={`flex flex-col justify-center items-center min-h-[1000px] bg-black`}>
+				<div className={`absolute flex justify-center top-[calc(97dvh)]`}>
+					<ScrollHint pos={0.5} />
+				</div>
 				<div className={`max-w-[850px] w-full flex justify-center items-center p-5`}>
 					<Image
 						src={KeyboardImage}
@@ -52,9 +58,6 @@ export default function KeyboardIndex() {
 							<h1 className={`mx-[30px] mt-[-10px] text-white`}>•</h1>
 						</span>
 					</Parallax>
-				</div>
-				<div className={`absolute flex justify-center top-[calc(97dvh)]`}>
-					<ScrollHint pos={0.5} />
 				</div>
 				<div className={`p-5 w-full flex flex-col items-center justify-center`}>
 					<BuyButton
