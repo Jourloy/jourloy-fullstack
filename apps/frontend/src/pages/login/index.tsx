@@ -1,99 +1,112 @@
-import {Button, Card, Center, Container, Divider, Flex, Stack, Text, Title} from "@mantine/core";
-import {IconArrowNarrowLeft, IconBrandGoogle} from "@tabler/icons-react";
+import {Button, Card, Divider, Loader, LoadingOverlay, PasswordInput, TextInput} from "@mantine/core";
+import {IconArrowNarrowLeft} from "@tabler/icons-react";
+import {z} from "zod";
+import {useForm, zodResolver} from "@mantine/form";
 import LoginAPI from "./api";
 import {useEffect, useState} from "react";
-import {store} from "../../store/store";
-import {userActions} from "../../store/features/user.slice";
-import {useLocation, useNavigate} from "react-router-dom";
-import DefaultLoading from "../../components/layout/loading";
-import {useDocumentTitle} from "@mantine/hooks";
+import {IUser} from "../../types";
+import {showNotification} from "@mantine/notifications";
 
-export default function Login() {
-	useDocumentTitle(`Вход`);
+export default function LoginIndex() {
+	const api = new LoginAPI();
 
-	const backend = new LoginAPI();
-	const navigate = useNavigate();
-	const location = useLocation();
+	const [loading, setLoading] = useState(false);
 
-	const [loading, setLoading] = useState(true);
+	const zodSchema = z.object({
+		login: z
+			.string()
+			.min(3, {message: `Минимум 3 символа`})
+			.max(15, {message: `Максимум 15 символов`}),
+		password: z
+			.string()
+			.min(6, {message: `Минимум 6 символов`})
+			.max(20, {message: `Максимум 20 символов`}),
+	});
 
-	const googleRedirect = () => {
-		window.location.href = `${backend.context.getUri()}/google`;
+	const form = useForm({
+		initialValues: {
+			login: ``,
+			password: ``,
+		},
+		validate: zodResolver(zodSchema),
+	});
+
+	const onSubmit = (values: typeof form.values) => {
+		setLoading(true);
+		// api.login(values.login, values.password).then((u: IUser) => {});
 	};
-
-	const toMain = () => {
-		navigate(`/`);
-	};
-
-	useEffect(() => {
-		const source = backend.getSource();
-
-		backend
-			.checkUser(source.token)
-			.then(d => {
-				if (d.data.user.username)
-					store.dispatch(userActions.changeUsername(d.data.user.username));
-				if (d.data.user.avatar) store.dispatch(userActions.changeAvatar(d.data.user.avatar));
-				if (d.data.user) {
-					store.dispatch(userActions.login());
-					location.key === `default` ? navigate(`/`) : navigate(-1);
-				}
-			})
-			.catch(() => {
-				setLoading(false);
-			});
-
-		return () => source.cancel();
-	}, []);
-
-	if (loading) return <DefaultLoading />;
 
 	return (
-		<Container
-			style={{
-				position: `absolute`,
-				top: `50%`,
-				left: `50%`,
-				transform: `translate(-50%, -50%)`,
-				maxWidth: `720px`,
-				width: `100%`,
-			}}
-		>
-			<Flex direction={"column"} align={`flex-start`}>
-				<Button mb={`5px`} variant={`subtle`} p={0} compact onClick={toMain}>
-					<Center inline>
-						<IconArrowNarrowLeft stroke={1.3} />
-						<Text>Вернуться на главную</Text>
-					</Center>
+		<main className={`flex flex-col justify-center items-center min-h-screen`}>
+			<div className={`flex flex-col max-w-[650px] w-full`}>
+				<Button variant={`transparent`} className={`max-w-[200px]`} color={`black`}>
+					<IconArrowNarrowLeft stroke={1.3} />
+					<p>Вернуться на главную</p>
 				</Button>
+				<Card withBorder className={`w-full flex flex-col justify-center items-center`}>
+					<LoadingOverlay
+						visible={loading}
+						zIndex={1000}
+						overlayProps={{radius: `md`, blur: 5}}
+						loaderProps={{
+							children: (
+								<>
+									<div className={`flex flex-col justify-center items-center`}>
+										<Loader color={`black`} />
+										<h2>Думаем...</h2>
+									</div>
+								</>
+							),
+						}}
+					/>
 
-				<Card withBorder w={"100%"}>
-					<Stack>
-						<Title align={`center`}>Привет!</Title>
+					<h1 className={`text-[40px]`}>Привет!</h1>
+					<p>Если аккаунта нет, то он будет создан автоматически</p>
 
-						<Text c={`dimmed`} align={`center`} mt={`-10px`}>
-							Если аккаунта нет, то он будет создан автоматически
-						</Text>
-						<Divider
-							label={
-								<Text size={`md`} tt={`uppercase`}>
-									войти через
-								</Text>
-							}
-							labelPosition={`center`}
+					<Divider className={`w-full my-[15px]`} />
+
+					<form
+						className={`w-full flex flex-col space-y-5`}
+						onSubmit={form.onSubmit(onSubmit)}
+					>
+						<TextInput
+							label={`Логин`}
+							placeholder={`Логин`}
+							withAsterisk
+							{...form.getInputProps(`login`)}
 						/>
-
-						<Button
-							leftIcon={<IconBrandGoogle />}
-							w={`100%`}
-							variant={`outline`}
-							onClick={googleRedirect}
-						>
-							Google
+						<PasswordInput
+							label={`Пароль`}
+							placeholder={`Пароль`}
+							withAsterisk
+							{...form.getInputProps(`password`)}
+						/>
+						<Button type={`submit`} color={`black`} fullWidth>
+							Войти
 						</Button>
-					</Stack>
+					</form>
+
+					<Divider
+						className={`w-full my-[15px]`}
+						labelPosition={`center`}
+						label={<p className={`text-[16px]`}>или через</p>}
+					/>
+
+					<Button color={`blue`} fullWidth>
+						Войти через Google
+					</Button>
 				</Card>
-			</Flex>
-		</Container>
+				<div
+					className={`flex flex-col md:flex-row space-x-0 md:space-x-5 space-y-5 md:space-y-0 mt-[20px]`}
+				>
+					<Card withBorder className={`w-full md:w-[50%]`}>
+						<p>У нас один аккаунт для всех сервисов на домене Jourloy</p>
+					</Card>
+					<Card withBorder className={`w-full md:w-[50%]`}>
+						<p>Аккаунт Google можно будет добавить позже</p>
+					</Card>
+				</div>
+			</div>
+		</main>
 	);
 }

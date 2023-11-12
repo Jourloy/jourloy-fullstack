@@ -4,6 +4,7 @@ import Main from "./pages";
 import KeyboardIndex from "./pages/keyboard";
 import TrackerIndex from "./pages/tracker";
 import { Page404 } from "./pages/404";
+import LoginIndex from "./pages/login";
 
 export default function App() {
 	return (
@@ -17,6 +18,9 @@ export default function App() {
 				
 				{/* TRACKER */}
 				<Route element={<TrackerIndex />} path="/tracker" />
+
+				{/* LOGIN */}
+				<Route element={<LoginIndex />} path="/login" />
 
 				{/* 404 */}
 				<Route element={<Page404 />} path="*" />
