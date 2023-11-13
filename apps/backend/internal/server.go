@@ -6,48 +6,72 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Jourloy/jourloy-fullstack/apps/backend/internal/database"
+	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/handlers"
+	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/storage"
 	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 var (
-	Host   = flag.Int(`p`, 10001, `Server port`)
-	logger = log.NewWithOptions(os.Stderr, log.Options{Prefix: `[server]`, Level: log.DebugLevel})
+	logger = log.NewWithOptions(os.Stderr, log.Options{
+		Prefix: `[server]`,
+		Level:  log.DebugLevel,
+	})
+
+	Port = flag.Int(`p`, 10001, `Port of the server`)
 )
 
-// Initialize the application.
-func init() {
-	if err := godotenv.Load(`.env`); err != nil {
-		logger.Error(`Error loading .env file`, err)
+func parseENV() {
+	if env, exist := os.LookupEnv(`PORT`); exist {
+		if p, err := strconv.Atoi(env); err == nil {
+			Port = &p
+		}
 	}
 }
 
 func StartServer() {
-	// Create storage
-	db := database.NewDatabase()
+	// Initialization
+	flag.Parse()
+	parseENV()
 
 	// Create router
 	r := gin.New()
 
 	// Middlewares
 	r.Use(gin.Recovery())
-	r.Use(customLogger())
+	r.Use(defaultMiddleware())
+	r.Use(loggerMiddleware())
 
 	// Groups
-	authGroup := r.Group("/auth")
+	app := r.Group(`/`)
+	auth := r.Group(`/auth`)
 
-	// Starting
-	log.Info(`Server started`)
-	if err := r.Run(":" + strconv.Itoa(*Host)); err != nil {
-		log.Fatal(err)
+	// Storage
+	s := storage.CreateStorage()
+
+	// Handlers
+	handlers.RegisterAppHandler(app)
+	handlers.RegisterAuthHandler(auth, s)
+
+	// Start server
+	logger.Info(`Server started on port ` + strconv.Itoa(*Port))
+	if err := r.Run("0.0.0.0:" + strconv.Itoa(*Port)); err != nil {
+		logger.Fatal(err)
 	}
 }
 
-func customLogger() gin.HandlerFunc {
+func defaultMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Request.ParseForm()
+
+		c.Next()
+	}
+}
+
+func loggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
+
 		c.Next()
 
 		latency := time.Since(t)
@@ -55,29 +79,12 @@ func customLogger() gin.HandlerFunc {
 		method := c.Request.Method
 		path := c.Request.URL.Path
 
-		if method == `GET` {
-			responseSize := c.Writer.Size()
-			logger.Info(
-				method,
-				`status`,
-				strconv.Itoa(status),
-				`size`,
-				responseSize,
-				`path`,
-				path,
-				`latency`,
-				latency,
-			)
-		} else {
-			logger.Info(
-				method,
-				`status`,
-				strconv.Itoa(status),
-				`path`,
-				path,
-				`latency`,
-				latency,
-			)
-		}
+		logger.Info(
+			`Response`,
+			`method`, method,
+			`path`, path,
+			`status`, status,
+			`latency`, latency,
+		)
 	}
 }

@@ -1,89 +1,167 @@
 package auth
 
 import (
-	"encoding/json"
-	"errors"
-	"io"
 	"os"
 
-	"github.com/Jourloy/jourloy-fullstack/apps/backend/internal/database"
-	"github.com/Jourloy/jourloy-fullstack/apps/backend/internal/database/repository"
+	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/storage"
+	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/storage/repositories"
 	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/gorilla/schema"
 	"golang.org/x/crypto/bcrypt"
 )
 
+type authService struct {
+	storage *storage.Storage
+}
+
 var (
-	logger = log.NewWithOptions(os.Stderr, log.Options{Prefix: `[auth]`, Level: log.DebugLevel})
+	logger = log.NewWithOptions(os.Stderr, log.Options{
+		Prefix: `[auth]`,
+		Level:  log.DebugLevel,
+	})
+	decoder = schema.NewDecoder()
 )
 
-var (
-	errBody = errors.New(`Body is invalid or missing`)
-)
+var Secret string
 
-type AuthService struct {
-	db *database.PostgresDatabase
+func parseENV() {
+	env, exist := os.LookupEnv(`SECRET`)
+	if !exist {
+		logger.Fatal(`Error loading SECRET from .env file`)
+	}
+	Secret = env
 }
 
-func NewAuthService(db *database.PostgresDatabase) *AuthService {
-	return &AuthService{
-		db: db,
+func CreateAuthService(s *storage.Storage) *authService {
+	parseENV()
+
+	return &authService{
+		storage: s,
 	}
 }
 
-type UserBody struct {
-	Username  *string `json:"username"`
-	Password  *string `json:"password"`
-	GoogleID  *string `json:"google_id"`
-	DiscordID *string `json:"discord_id"`
+type UserData struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
 }
 
-type UserResponse struct {
-	Username     string
-	Role         string
-	Avatar       string
-	RefreshToken string
-	AccessToken  string
-}
-
-func (s *AuthService) Login(ctx *gin.Context) {
-	respBody, err := io.ReadAll(ctx.Request.Body)
-	if err != nil {
-		logger.Error(err)
-		ctx.String(500, err.Error())
-	}
-	defer ctx.Request.Body.Close()
-
-	var userBody UserBody
-	if err := json.Unmarshal(respBody, &userBody); err != nil {
-		logger.Error(err)
-		ctx.String(400, errBody.Error())
-	}
-
-	user, err := s.db.UserRepository.GetUserByUsername(*userBody.Username)
-	if err != nil {
-		logger.Warn(err)
-		userModel, err := s.Register(userBody)
-		if err != nil {
-			logger.Error(err)
-			ctx.String(400, err.Error())
-		}
-		ctx.JSON(200, userModel)
+func (s *authService) LoginOrRegister(c *gin.Context) {
+	// Decode body
+	var body UserData
+	if err := decoder.Decode(&body, c.Request.PostForm); err != nil {
+		c.String(400, `body not found`)
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(*userBody.Password)); err != nil {
-		logger.Error(err)
-		ctx.String(401, err.Error())
+	// Check body
+	if body.Username == `nil` || body.Password == `` {
+		c.String(401, `invalid credentials`)
+		return
 	}
 
-	ctx.JSON(200, user)
+	// Get user by username
+	user := s.storage.UserRepository.GetUserByUsername(body.Username)
+
+	if user == nil {
+		// If user doesn't exist create
+		s.Register(c)
+		return
+	} else {
+		// Check password
+		err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
+		if err != nil {
+			c.String(403, `invalid credentials`)
+			return
+		}
+	}
+
+	// Add JWT tokens to cookies
+	if err := s.addJWTCookies(body, c); err != nil {
+		c.String(500, `failed to add JWT tokens to cookies`)
+		return
+	}
+
+	logger.Info(`logged in`, `username`, user.Username)
+
+	c.JSON(200, gin.H{
+		`username`: user.Username,
+		`role`:     user.Role,
+	})
 }
 
-func (s *AuthService) Register(userBody UserBody) (repository.UserModel, error) {
-	return s.db.UserRepository.CreateUser(*userBody.Username, `user`, userBody.Password, nil, nil)
+// Register user
+func (s *authService) Register(c *gin.Context) {
+	// Decode body
+	var body UserData
+	if err := decoder.Decode(&body, c.Request.PostForm); err != nil {
+		c.String(400, `body not found`)
+		return
+	}
+
+	// Check body
+	if body.Username == `nil` || body.Password == `` {
+		c.String(401, `invalid credentials`)
+		return
+	}
+
+	// Create user
+	if err := s.storage.UserRepository.CreateUser(&repositories.UserModel{
+		Username: body.Username,
+		Password: body.Password,
+		Role:     `user`,
+	}); err != nil {
+		c.String(500, `failed to create user`)
+		return
+	}
+
+	// Add JWT tokens to cookies
+	if err := s.addJWTCookies(body, c); err != nil {
+		c.String(500, `failed to add JWT tokens to cookies`)
+		return
+	}
+
+	logger.Info(`registered`, `username`, body.Username)
+
+	// Get actual user info
+	user := s.storage.UserRepository.GetUserByUsername(body.Username)
+
+	c.JSON(200, gin.H{
+		`username`: user.Username,
+		`role`:     user.Role,
+	})
 }
 
-func (s *AuthService) GenerateJWT(userBody UserBody, role *string) {
+// Add JWT tokens to cookies
+func (s *authService) addJWTCookies(body UserData, c *gin.Context) error {
+	a, r := s.generateJWTTokens(body.Username, `user`)
 
+	user := s.storage.UserRepository.GetUserByUsername(body.Username)
+	user.RefreshTokens = append(user.RefreshTokens, r)
+	err := s.storage.UserRepository.UpdateUser(user)
+	if err != nil {
+		return err
+	}
+
+	c.SetCookie(`access_token`, a, 60*60*24*7, `localhost`, `/`, true, true)
+	c.SetCookie(`refresh_token`, r, 60*60*24*14, `localhost`, `/`, true, true)
+
+	return nil
+}
+
+// Generate pair of tokens
+func (s *authService) generateJWTTokens(username string, role string) (string, string) {
+	// Generate tokens
+	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		`username`: username,
+		`role`:     role,
+	})
+	refreshToken := jwt.New(jwt.SigningMethodHS256)
+
+	// Sign tokens
+	accessTokenString, _ := accessToken.SignedString([]byte(Secret))
+	refreshTokenString, _ := refreshToken.SignedString([]byte(Secret))
+
+	return accessTokenString, refreshTokenString
 }
