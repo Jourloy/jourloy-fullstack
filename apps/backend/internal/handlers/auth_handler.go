@@ -10,4 +10,5 @@ func RegisterAuthHandler(g *gin.RouterGroup, s *storage.Storage) {
 	authService := auth.CreateAuthService(s)
 
 	g.POST(`/login`, authService.LoginOrRegister)
+	g.POST(`/register`, authService.Register)
 }
