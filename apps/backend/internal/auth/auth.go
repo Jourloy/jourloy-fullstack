@@ -1,6 +1,9 @@
 package auth
 
 import (
+	"encoding/json"
+	"errors"
+	"io"
 	"os"
 
 	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/storage"
@@ -8,7 +11,6 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/gorilla/schema"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -21,7 +23,6 @@ var (
 		Prefix: `[auth]`,
 		Level:  log.DebugLevel,
 	})
-	decoder = schema.NewDecoder()
 )
 
 var Secret string
@@ -60,16 +61,26 @@ type UserData struct {
 // Parameters:
 // - c: the gin.Context object representing the HTTP request and response.
 func (s *authService) LoginOrRegister(c *gin.Context) {
-	// Decode body
-	var body UserData
-	if err := decoder.Decode(&body, c.Request.PostForm); err != nil {
+	// Check body
+	if c.Request.Body == nil {
 		c.String(400, `body not found`)
 		return
 	}
 
-	// Check body
-	if body.Username == `nil` || body.Password == `` {
-		c.String(401, `invalid credentials`)
+	// Read body
+	b, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		logger.Error(`failed to read body`, `err`, err)
+		c.String(500, `failed to read body`)
+		return
+	}
+	defer c.Request.Body.Close()
+
+	// Unmarshal
+	var body UserData
+	if err := json.Unmarshal(b, &body); err != nil {
+		logger.Error(`failed to unmarshal body`, `err`, err)
+		c.String(500, `failed to unmarshal body`)
 		return
 	}
 
@@ -78,7 +89,25 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 
 	if user == nil {
 		// If user doesn't exist create
-		s.Register(c)
+		// Register user
+		if err := s.registerUser(body.Username, body.Password); err != nil {
+			c.String(500, `failed to register user`)
+			return
+		}
+
+		// Add JWT tokens to cookies
+		if err := s.addJWTCookies(body, c); err != nil {
+			c.String(500, `failed to add JWT tokens to cookies`)
+			return
+		}
+
+		// Get actual user info
+		newUser := s.storage.UserRepository.GetUserByUsername(body.Username)
+
+		c.JSON(200, gin.H{
+			`username`: newUser.Username,
+			`role`:     newUser.Role,
+		})
 		return
 	} else {
 		// Check password
@@ -95,7 +124,14 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 		return
 	}
 
-	logger.Info(`logged in`, `username`, user.Username)
+	logger.Debug(`logged in`, `username`, user.Username)
+
+	a, err := c.Cookie(`access_token`)
+	if err != nil {
+		logger.Error(`failed to get access token from cookie`, `err`, err)
+	} else {
+		logger.Debug(`access token`, `token`, a)
+	}
 
 	c.JSON(200, gin.H{
 		`username`: user.Username,
@@ -112,34 +148,30 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 // Parameters:
 // - c: the gin.Context object representing the HTTP request and response.
 func (s *authService) Register(c *gin.Context) {
-	// Decode body
-	var body UserData
-	if err := decoder.Decode(&body, c.Request.PostForm); err != nil {
+	// Check body
+	if c.Request.Body == nil {
 		c.String(400, `body not found`)
 		return
 	}
 
-	// Check body
-	if body.Username == `nil` || body.Password == `` {
-		c.String(401, `invalid credentials`)
+	// Read body
+	b, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		c.String(500, `failed to read body`)
+		return
+	}
+	defer c.Request.Body.Close()
+
+	// Unmarshal
+	var body UserData
+	if err := json.Unmarshal(b, &body); err != nil {
+		c.String(500, `failed to unmarshal body`)
 		return
 	}
 
-	// Get user by username
-	user := s.storage.UserRepository.GetUserByUsername(body.Username)
-
-	if user != nil {
-		c.String(403, `user already exists`)
-		return
-	}
-
-	// Create user
-	if err := s.storage.UserRepository.CreateUser(&repositories.UserModel{
-		Username: body.Username,
-		Password: body.Password,
-		Role:     `user`,
-	}); err != nil {
-		c.String(500, `failed to create user`)
+	// Register user
+	if err := s.registerUser(body.Username, body.Password); err != nil {
+		c.String(500, `failed to register user`)
 		return
 	}
 
@@ -149,8 +181,6 @@ func (s *authService) Register(c *gin.Context) {
 		return
 	}
 
-	logger.Info(`registered`, `username`, body.Username)
-
 	// Get actual user info
 	newUser := s.storage.UserRepository.GetUserByUsername(body.Username)
 
@@ -158,6 +188,28 @@ func (s *authService) Register(c *gin.Context) {
 		`username`: newUser.Username,
 		`role`:     newUser.Role,
 	})
+}
+
+func (s *authService) registerUser(username string, password string) error {
+	// Get user by username
+	user := s.storage.UserRepository.GetUserByUsername(username)
+
+	if user != nil {
+		return errors.New(`user already exists`)
+	}
+
+	// Create user
+	if err := s.storage.UserRepository.CreateUser(&repositories.UserModel{
+		Username: username,
+		Password: password,
+		Role:     `user`,
+	}); err != nil {
+		return errors.New(`failed to create user`)
+	}
+
+	logger.Debug(`registered`, `username`, username)
+
+	return nil
 }
 
 // addJWTCookies generates and adds JWT cookies to the provided gin.Context.
@@ -184,8 +236,8 @@ func (s *authService) addJWTCookies(body UserData, c *gin.Context) error {
 		return err
 	}
 
-	c.SetCookie(`access_token`, a, 60*60*24*7, `localhost`, `/`, true, true)
-	c.SetCookie(`refresh_token`, r, 60*60*24*14, `localhost`, `/`, true, true)
+	c.SetCookie(`access_token`, a, 60*60*24, `localhost`, `/`, true, true)
+	c.SetCookie(`refresh_token`, r, 60*60*24, `localhost`, `/`, true, true)
 
 	return nil
 }

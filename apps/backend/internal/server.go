@@ -9,6 +9,7 @@ import (
 	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/handlers"
 	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/storage"
 	"github.com/charmbracelet/log"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,8 +41,14 @@ func StartServer() {
 	r := gin.New()
 
 	// Middlewares
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{`http://localhost:10000`},
+		AllowMethods:     []string{`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`},
+		AllowCredentials: true,
+	}))
 	r.Use(gin.Recovery())
-	r.Use(defaultMiddleware())
+
+	// Custom middlewares
 	r.Use(loggerMiddleware())
 
 	// Groups
@@ -59,15 +66,6 @@ func StartServer() {
 	logger.Info(`Server started on port ` + strconv.Itoa(*Port))
 	if err := r.Run("0.0.0.0:" + strconv.Itoa(*Port)); err != nil {
 		logger.Fatal(err)
-	}
-}
-
-// defaultMiddleware is a middleware function that parses the request body.
-func defaultMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Request.ParseForm()
-
-		c.Next()
 	}
 }
 
