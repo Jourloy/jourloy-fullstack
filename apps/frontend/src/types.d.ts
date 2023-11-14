@@ -1,13 +1,3 @@
-export type TUser = {
-	id: number;
-	username: string;
-	lowercaseUsername: string;
-	avatar: string;
-	role: string;
-	createdAt: Date;
-	updatedAt: Date;
-};
-
 export type TCalculator = {
 	id: number;
 	name: number;
@@ -53,19 +43,7 @@ export type TTracker = {
 	updatedAt: string;
 };
 
-export type TSpend = {
-	id: number;
-	cost: number;
-	category: string;
-	description?: string;
-	date?: string;
-	createdAt: string;
-	updatedAt: string;
-};
 
-export interface IPlannedSpend extends TSpend {
-	date: string;
-}
 
 export type TDarkClass = {
 	id: number;
@@ -89,4 +67,29 @@ export type TDarkLevel = {
 	depth: string;
 	classes: string[];
 	attributeId: number;
+};
+
+// Updated
+
+export type IUser = {
+	id: number;
+	username: string;
+	avatar: string;
+	role: string;
+	createdAt: Date;
+	updatedAt: Date;
+};
+
+export interface ISpend {
+	id: number;
+	cost: number;
+	category: string;
+	description?: string;
+	date?: string;
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface IPlannedSpend extends ISpend {
+	date: string;
 }

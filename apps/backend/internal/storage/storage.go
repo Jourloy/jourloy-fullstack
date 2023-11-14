@@ -23,6 +23,14 @@ var (
 	DatabaseDNS string
 )
 
+// parseENV parses the environment variables.
+func parseENV() {
+	if env, exist := os.LookupEnv(`DATABASE_DSN`); exist {
+		DatabaseDNS = env
+	}
+}
+
+// CreateStorage initializes and returns a new instance of the Storage struct.
 func CreateStorage() *Storage {
 	// Initialization
 	parseENV()
@@ -43,11 +51,5 @@ func CreateStorage() *Storage {
 
 	return &Storage{
 		UserRepository: userRepository,
-	}
-}
-
-func parseENV() {
-	if env, exist := os.LookupEnv(`DATABASE_DSN`); exist {
-		DatabaseDNS = env
 	}
 }

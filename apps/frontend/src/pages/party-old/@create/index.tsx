@@ -19,7 +19,7 @@ import {store} from "../../../store/store";
 import {useState} from "react";
 import {formatter} from "../../../context";
 import {useNavigate} from "react-router-dom";
-import ScrollHint from "../../../components/layout/scrollHint";
+import ScrollHint from "../../../components/layout/ScrollHint";
 import SuccessNotification from "../../../components/logical/notification/success.notification";
 import ErrorNotification from "../../../components/logical/notification/error.notification";
 

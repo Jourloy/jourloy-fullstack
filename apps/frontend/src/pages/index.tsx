@@ -61,12 +61,32 @@ export default function Main() {
 					<div
 						className={`flex flex-col md:flex-row w-full md:space-x-5 space-y-5 md:space-y-0 mt-5`}
 					>
-						<Button color={`black`} fullWidth onClick={onTracker}>
+						<Button color={`black`} fullWidth onClick={onTracker} variant={`outline`}>
 							Трекер
 						</Button>
 
-						<Button color={`black`} fullWidth onClick={onKeyboard}>
+						<Button color={`black`} fullWidth onClick={onKeyboard} variant={`outline`}>
 							Клавиатура
+						</Button>
+					</div>
+
+					<div
+						className={`flex flex-col md:flex-row w-full md:space-x-5 space-y-5 md:space-y-0 mt-5`}
+					>
+						<Button color={`black`} fullWidth onClick={onTracker} variant={`outline`}>
+							Календарь
+						</Button>
+
+						<Button color={`black`} fullWidth onClick={onKeyboard} variant={`outline`}>
+							Спеки
+						</Button>
+					</div>
+
+					<div
+						className={`flex flex-col md:flex-row w-full md:space-x-5 space-y-5 md:space-y-0 mt-5`}
+					>
+						<Button color={`black`} fullWidth onClick={onTracker} variant={`outline`}>
+							Party калькулятор
 						</Button>
 					</div>
 				</Card>

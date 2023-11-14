@@ -3,12 +3,14 @@ import {IconArrowNarrowLeft} from "@tabler/icons-react";
 import {z} from "zod";
 import {useForm, zodResolver} from "@mantine/form";
 import LoginAPI from "./api";
-import {useEffect, useState} from "react";
-import {IUser} from "../../types";
+import {useState} from "react";
+import {useUserStore} from "../../store/user.store";
 import {showNotification} from "@mantine/notifications";
+import {useNavigate} from "react-router-dom";
 
 export default function LoginIndex() {
 	const api = new LoginAPI();
+	const navigate = useNavigate();
 
 	const [loading, setLoading] = useState(false);
 
@@ -33,7 +35,35 @@ export default function LoginIndex() {
 
 	const onSubmit = (values: typeof form.values) => {
 		setLoading(true);
-		// api.login(values.login, values.password).then((u: IUser) => {});
+		api.login(values.login, values.password)
+			.then(data => {
+				if (data) {
+					useUserStore.setState({
+						username: data.data.username,
+						avatar: data.data.avatar,
+						role: data.data.role,
+						logined: true,
+					});
+					showNotification({
+						title: `Авторизация прошла успешно`,
+						message: `Добро пожаловать, ${data.data.username}`,
+						autoClose: 5000,
+						color: `green`,
+					});
+					navigate(`/`);
+					return;
+				}
+
+				showNotification({
+					title: `Авторизация не удалась`,
+					message: `Неправильное имя пользователя или пароль`,
+					autoClose: 5000,
+					color: `red`,
+				});
+			})
+			.finally(() => {
+				setLoading(false);
+			});
 	};
 
 	return (

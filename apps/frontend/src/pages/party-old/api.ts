@@ -1,5 +1,5 @@
 import {CancelToken} from "axios";
-import BackendContext from "../../context/backend.context";
+import BackendContext from "../../context/backend";
 import {TCalculator, TMember} from "../../types";
 import { store } from "../../store/store";
 import { partyActions } from "../../store/features/party.slice";

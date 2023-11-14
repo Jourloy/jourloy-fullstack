@@ -1,5 +1,5 @@
 import { CancelToken } from "axios";
-import BackendContext from "../../context/backend.context";
+import BackendContext from "../../context/backend";
 import { TDarkAttribute, TDarkClass } from "../../types";
 import { store } from "../../store/store";
 import { darkActions } from "../../store/features/dark.slice";

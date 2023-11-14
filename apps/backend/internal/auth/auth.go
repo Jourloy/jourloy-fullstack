@@ -26,6 +26,7 @@ var (
 
 var Secret string
 
+// parseENV parses the environment variables.
 func parseENV() {
 	env, exist := os.LookupEnv(`SECRET`)
 	if !exist {
@@ -34,6 +35,7 @@ func parseENV() {
 	Secret = env
 }
 
+// CreateAuthService creates an instance of the authService struct and returns it.
 func CreateAuthService(s *storage.Storage) *authService {
 	parseENV()
 
@@ -47,6 +49,16 @@ type UserData struct {
 	Password string `json:"password"`
 }
 
+// LoginOrRegister handles the login or registration process.
+//
+// It decodes the body of the request and checks the username and password
+// provided. If the username does not exist, it registers the user. If the
+// username exists, it checks the password. If the credentials are invalid, it
+// returns an appropriate error response. If the credentials are valid, it adds
+// JWT tokens to cookies and returns the user's username and role.
+//
+// Parameters:
+// - c: the gin.Context object representing the HTTP request and response.
 func (s *authService) LoginOrRegister(c *gin.Context) {
 	// Decode body
 	var body UserData
@@ -91,7 +103,14 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 	})
 }
 
-// Register user
+// Register handles the registration process for a user.
+//
+// It decodes the request body and checks if the necessary fields are present. If
+// the fields are valid, it creates a new user and adds JWT tokens to the cookies.
+// Finally, it returns the registered user's information in JSON format.
+//
+// Parameters:
+// - c: the gin.Context object representing the HTTP request and response.
 func (s *authService) Register(c *gin.Context) {
 	// Decode body
 	var body UserData
@@ -133,7 +152,20 @@ func (s *authService) Register(c *gin.Context) {
 	})
 }
 
-// Add JWT tokens to cookies
+// addJWTCookies generates and adds JWT cookies to the provided gin.Context.
+//
+// It takes in the body UserData containing the username and generates JWT access
+// and refresh tokens. The generated refresh token is appended to the user's existing
+// refresh tokens and the user is updated in the UserRepository. If the user update
+// fails, an error is returned. The generated access and refresh tokens are then set
+// as cookies in the gin.Context with a specified expiration time.
+//
+// Parameters:
+// - body: UserData containing the username.
+// - c: gin.Context to add the JWT cookies to.
+//
+// Returns:
+// - error: Returns an error if the user update fails, otherwise returns nil.
 func (s *authService) addJWTCookies(body UserData, c *gin.Context) error {
 	a, r := s.generateJWTTokens(body.Username, `user`)
 
@@ -150,7 +182,15 @@ func (s *authService) addJWTCookies(body UserData, c *gin.Context) error {
 	return nil
 }
 
-// Generate pair of tokens
+// generateJWTTokens generates JWT tokens for the given username and role.
+//
+// Parameters:
+// - username: the username for which the tokens are generated.
+// - role: the role associated with the user.
+//
+// Returns:
+// - accessTokenString: the access token as a string.
+// - refreshTokenString: the refresh token as a string.
 func (s *authService) generateJWTTokens(username string, role string) (string, string) {
 	// Generate tokens
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{

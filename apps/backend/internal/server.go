@@ -21,6 +21,7 @@ var (
 	Port = flag.Int(`p`, 10001, `Port of the server`)
 )
 
+// parseENV parses the environment variables.
 func parseENV() {
 	if env, exist := os.LookupEnv(`PORT`); exist {
 		if p, err := strconv.Atoi(env); err == nil {
@@ -29,6 +30,7 @@ func parseENV() {
 	}
 }
 
+// StartServer initializes the server and starts listening for incoming requests.
 func StartServer() {
 	// Initialization
 	flag.Parse()
@@ -60,6 +62,7 @@ func StartServer() {
 	}
 }
 
+// defaultMiddleware is a middleware function that parses the request body.
 func defaultMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Request.ParseForm()
@@ -68,6 +71,7 @@ func defaultMiddleware() gin.HandlerFunc {
 	}
 }
 
+// loggerMiddleware is a middleware function that logs information about incoming requests.
 func loggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		t := time.Now()
