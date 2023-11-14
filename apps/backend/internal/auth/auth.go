@@ -125,6 +125,14 @@ func (s *authService) Register(c *gin.Context) {
 		return
 	}
 
+	// Get user by username
+	user := s.storage.UserRepository.GetUserByUsername(body.Username)
+
+	if user != nil {
+		c.String(403, `user already exists`)
+		return
+	}
+
 	// Create user
 	if err := s.storage.UserRepository.CreateUser(&repositories.UserModel{
 		Username: body.Username,
@@ -144,11 +152,11 @@ func (s *authService) Register(c *gin.Context) {
 	logger.Info(`registered`, `username`, body.Username)
 
 	// Get actual user info
-	user := s.storage.UserRepository.GetUserByUsername(body.Username)
+	newUser := s.storage.UserRepository.GetUserByUsername(body.Username)
 
 	c.JSON(200, gin.H{
-		`username`: user.Username,
-		`role`:     user.Role,
+		`username`: newUser.Username,
+		`role`:     newUser.Role,
 	})
 }
 
