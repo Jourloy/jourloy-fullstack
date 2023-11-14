@@ -42,8 +42,9 @@ func StartServer() {
 
 	// Middlewares
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{`http://localhost:10000`},
+		AllowOrigins:     []string{`http://localhost:10000`, `http://192.168.0.222:10000`},
 		AllowMethods:     []string{`GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `HEAD`, `OPTIONS`},
+		AllowHeaders:     []string{`Origin`, `Content-Length`, `Content-Type`, `Authorization`},
 		AllowCredentials: true,
 	}))
 	r.Use(gin.Recovery())

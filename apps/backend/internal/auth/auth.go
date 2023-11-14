@@ -126,13 +126,6 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 
 	logger.Debug(`logged in`, `username`, user.Username)
 
-	a, err := c.Cookie(`access_token`)
-	if err != nil {
-		logger.Error(`failed to get access token from cookie`, `err`, err)
-	} else {
-		logger.Debug(`access token`, `token`, a)
-	}
-
 	c.JSON(200, gin.H{
 		`username`: user.Username,
 		`role`:     user.Role,
@@ -190,6 +183,61 @@ func (s *authService) Register(c *gin.Context) {
 	})
 }
 
+func (s *authService) GetUserData(c *gin.Context) {
+	// Get cookies
+	a, err := c.Cookie(`access_token`)
+	if err != nil {
+		c.String(400, `failed to get access token`)
+	}
+	r, err := c.Cookie(`refresh_token`)
+	if err != nil {
+		c.String(400, `failed to get refresh token`)
+	}
+
+	if a == `` || r == `` {
+		c.String(400, `failed to get user data`)
+	}
+
+	// Verify and decode
+	claims := jwt.MapClaims{}
+	if _, err := jwt.ParseWithClaims(a, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(Secret), nil
+	}); err != nil {
+		c.String(400, `failed to get user data`)
+	}
+
+	// Check username and role
+	var username string
+	var role string
+
+	for key, val := range claims {
+		if key == `username` {
+			username = val.(string)
+		}
+		if key == `role` {
+			role = val.(string)
+		}
+	}
+
+	if username == `` || role == `` {
+		c.String(400, `failed to get user data`)
+	}
+
+	// Get actual user info
+	user := s.storage.UserRepository.GetUserByUsername(username)
+
+	// Add JWT tokens to cookies
+	if err := s.addJWTCookies(UserData{Username: user.Username}, c); err != nil {
+		c.String(500, `failed to add JWT tokens to cookies`)
+		return
+	}
+
+	c.JSON(200, gin.H{
+		`username`: user.Username,
+		`role`:     user.Role,
+	})
+}
+
 func (s *authService) registerUser(username string, password string) error {
 	// Get user by username
 	user := s.storage.UserRepository.GetUserByUsername(username)
@@ -236,8 +284,8 @@ func (s *authService) addJWTCookies(body UserData, c *gin.Context) error {
 		return err
 	}
 
-	c.SetCookie(`access_token`, a, 60*60*24, `localhost`, `/`, true, true)
-	c.SetCookie(`refresh_token`, r, 60*60*24, `localhost`, `/`, true, true)
+	c.SetCookie(`access_token`, a, 60*60*24, `/`, `localhost`, true, true)
+	c.SetCookie(`refresh_token`, r, 60*60*24, `/`, `localhost`, true, true)
 
 	return nil
 }
