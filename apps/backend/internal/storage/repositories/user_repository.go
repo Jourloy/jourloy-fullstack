@@ -16,10 +16,15 @@ type UserModel struct {
 	Password      string
 	Role          string
 	RefreshTokens pq.StringArray `gorm:"type:text[]"`
+	Budget        []BudgetModel  `gorm:"foreignKey:UserID"`
 }
 
 // CreateUserRepository creates a new instance of UserRepository.
 func CreateUserRepository(db *gorm.DB) *UserRepository {
+
+	// Migrate the UserModel struct
+	db.AutoMigrate(&UserModel{})
+
 	return &UserRepository{
 		db: db,
 	}

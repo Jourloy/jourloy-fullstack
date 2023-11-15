@@ -11,7 +11,9 @@ import (
 )
 
 type Storage struct {
-	UserRepository *repositories.UserRepository
+	User   *repositories.UserRepository
+	Budget *repositories.BudgetRepository
+	Spend  *repositories.SpendRepository
 }
 
 var (
@@ -43,13 +45,14 @@ func CreateStorage() *Storage {
 		logger.Fatal(`Failed to connect to database`, `err`, err)
 	}
 
-	// Auto migrate
-	db.AutoMigrate(&repositories.UserModel{})
-
 	// Create repositories
 	userRepository := repositories.CreateUserRepository(db)
+	budgetRepository := repositories.CreateBudgetRepository(db)
+	spendRepository := repositories.CreateSpendRepository(db)
 
 	return &Storage{
-		UserRepository: userRepository,
+		User:   userRepository,
+		Budget: budgetRepository,
+		Spend:  spendRepository,
 	}
 }

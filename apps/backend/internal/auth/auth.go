@@ -63,6 +63,7 @@ type UserData struct {
 func (s *authService) LoginOrRegister(c *gin.Context) {
 	// Check body
 	if c.Request.Body == nil {
+		logger.Error(`body not found`)
 		c.String(400, `body not found`)
 		return
 	}
@@ -74,7 +75,6 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 		c.String(500, `failed to read body`)
 		return
 	}
-	defer c.Request.Body.Close()
 
 	// Unmarshal
 	var body UserData
@@ -85,24 +85,26 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 	}
 
 	// Get user by username
-	user := s.storage.UserRepository.GetUserByUsername(body.Username)
+	user := s.storage.User.GetUserByUsername(body.Username)
 
 	if user == nil {
 		// If user doesn't exist create
 		// Register user
 		if err := s.registerUser(body.Username, body.Password); err != nil {
+			logger.Error(`failed to register user`, `err`, err)
 			c.String(500, `failed to register user`)
 			return
 		}
 
 		// Add JWT tokens to cookies
 		if err := s.addJWTCookies(body, c); err != nil {
+			logger.Error(`failed to add JWT tokens to cookies`, `err`, err)
 			c.String(500, `failed to add JWT tokens to cookies`)
 			return
 		}
 
 		// Get actual user info
-		newUser := s.storage.UserRepository.GetUserByUsername(body.Username)
+		newUser := s.storage.User.GetUserByUsername(body.Username)
 
 		c.JSON(200, gin.H{
 			`username`: newUser.Username,
@@ -113,6 +115,7 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 		// Check password
 		err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.Password))
 		if err != nil {
+			logger.Error(`invalid credentials`, `err`, err)
 			c.String(403, `invalid credentials`)
 			return
 		}
@@ -120,6 +123,7 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 
 	// Add JWT tokens to cookies
 	if err := s.addJWTCookies(body, c); err != nil {
+		logger.Error(`failed to add JWT tokens to cookies`, `err`, err)
 		c.String(500, `failed to add JWT tokens to cookies`)
 		return
 	}
@@ -143,6 +147,7 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 func (s *authService) Register(c *gin.Context) {
 	// Check body
 	if c.Request.Body == nil {
+		logger.Error(`body not found`)
 		c.String(400, `body not found`)
 		return
 	}
@@ -150,6 +155,7 @@ func (s *authService) Register(c *gin.Context) {
 	// Read body
 	b, err := io.ReadAll(c.Request.Body)
 	if err != nil {
+		logger.Error(`failed to read body`, `err`, err)
 		c.String(500, `failed to read body`)
 		return
 	}
@@ -158,24 +164,27 @@ func (s *authService) Register(c *gin.Context) {
 	// Unmarshal
 	var body UserData
 	if err := json.Unmarshal(b, &body); err != nil {
+		logger.Error(`failed to unmarshal body`, `err`, err)
 		c.String(500, `failed to unmarshal body`)
 		return
 	}
 
 	// Register user
 	if err := s.registerUser(body.Username, body.Password); err != nil {
+		logger.Error(`failed to register user`, `err`, err)
 		c.String(500, `failed to register user`)
 		return
 	}
 
 	// Add JWT tokens to cookies
 	if err := s.addJWTCookies(body, c); err != nil {
+		logger.Error(`failed to add JWT tokens to cookies`, `err`, err)
 		c.String(500, `failed to add JWT tokens to cookies`)
 		return
 	}
 
 	// Get actual user info
-	newUser := s.storage.UserRepository.GetUserByUsername(body.Username)
+	newUser := s.storage.User.GetUserByUsername(body.Username)
 
 	c.JSON(200, gin.H{
 		`username`: newUser.Username,
@@ -187,14 +196,17 @@ func (s *authService) GetUserData(c *gin.Context) {
 	// Get cookies
 	a, err := c.Cookie(`access_token`)
 	if err != nil {
+		logger.Error(`failed to get access token`, `err`, err)
 		c.String(400, `failed to get access token`)
 	}
 	r, err := c.Cookie(`refresh_token`)
 	if err != nil {
+		logger.Error(`failed to get refresh token`, `err`, err)
 		c.String(400, `failed to get refresh token`)
 	}
 
 	if a == `` || r == `` {
+		logger.Error(`failed to get user data`)
 		c.String(400, `failed to get user data`)
 	}
 
@@ -203,6 +215,7 @@ func (s *authService) GetUserData(c *gin.Context) {
 	if _, err := jwt.ParseWithClaims(a, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(Secret), nil
 	}); err != nil {
+		logger.Error(`failed to verify access token`, `err`, err)
 		c.String(400, `failed to get user data`)
 	}
 
@@ -220,14 +233,16 @@ func (s *authService) GetUserData(c *gin.Context) {
 	}
 
 	if username == `` || role == `` {
+		logger.Error(`failed to get user data`)
 		c.String(400, `failed to get user data`)
 	}
 
 	// Get actual user info
-	user := s.storage.UserRepository.GetUserByUsername(username)
+	user := s.storage.User.GetUserByUsername(username)
 
 	// Add JWT tokens to cookies
 	if err := s.addJWTCookies(UserData{Username: user.Username}, c); err != nil {
+		logger.Error(`failed to add JWT tokens to cookies`, `err`, err)
 		c.String(500, `failed to add JWT tokens to cookies`)
 		return
 	}
@@ -240,14 +255,14 @@ func (s *authService) GetUserData(c *gin.Context) {
 
 func (s *authService) registerUser(username string, password string) error {
 	// Get user by username
-	user := s.storage.UserRepository.GetUserByUsername(username)
+	user := s.storage.User.GetUserByUsername(username)
 
 	if user != nil {
 		return errors.New(`user already exists`)
 	}
 
 	// Create user
-	if err := s.storage.UserRepository.CreateUser(&repositories.UserModel{
+	if err := s.storage.User.CreateUser(&repositories.UserModel{
 		Username: username,
 		Password: password,
 		Role:     `user`,
@@ -264,7 +279,7 @@ func (s *authService) registerUser(username string, password string) error {
 //
 // It takes in the body UserData containing the username and generates JWT access
 // and refresh tokens. The generated refresh token is appended to the user's existing
-// refresh tokens and the user is updated in the UserRepository. If the user update
+// refresh tokens and the user is updated in the User. If the user update
 // fails, an error is returned. The generated access and refresh tokens are then set
 // as cookies in the gin.Context with a specified expiration time.
 //
@@ -277,9 +292,9 @@ func (s *authService) registerUser(username string, password string) error {
 func (s *authService) addJWTCookies(body UserData, c *gin.Context) error {
 	a, r := s.generateJWTTokens(body.Username, `user`)
 
-	user := s.storage.UserRepository.GetUserByUsername(body.Username)
+	user := s.storage.User.GetUserByUsername(body.Username)
 	user.RefreshTokens = append(user.RefreshTokens, r)
-	err := s.storage.UserRepository.UpdateUser(user)
+	err := s.storage.User.UpdateUser(user)
 	if err != nil {
 		return err
 	}

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/handlers"
+	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/middlewares"
 	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/storage"
 	"github.com/charmbracelet/log"
 	"github.com/gin-contrib/cors"
@@ -51,6 +52,7 @@ func StartServer() {
 
 	// Custom middlewares
 	r.Use(loggerMiddleware())
+	r.Use(middlewares.JwtMiddleware())
 
 	// Groups
 	app := r.Group(`/`)
