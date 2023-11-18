@@ -3,7 +3,9 @@ package repositories
 import (
 	"database/sql"
 	"errors"
+	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/jmoiron/sqlx"
 )
 
@@ -11,11 +13,18 @@ type SpendRepository struct {
 	db *sqlx.DB
 }
 
+// Logger for the Spends
+var spendLogger = log.NewWithOptions(os.Stderr, log.Options{
+	Prefix: `[database-spend]`,
+	Level:  log.DebugLevel,
+})
+
+// Schema for the Spends
 var spendSchema = `
 CREATE TABLE IF NOT EXISTS spends (
 	id SERIAL PRIMARY KEY,
-	user_id BIGINT NOT NULL,
-	budget_id BIGINT NOT NULL,
+	user_id BIGINT REFERENCES users(id) ON DELETE CASCADE,
+	budget_id BIGINT REFERENCES budgets(id) ON DELETE CASCADE,
 	cost INT NOT NULL,
 	category VARCHAR(255) NOT NULL,
 	description VARCHAR(255),
@@ -26,6 +35,7 @@ CREATE TABLE IF NOT EXISTS spends (
 )`
 
 type SpendModel struct {
+	ID          uint   `db:"id"`
 	UserID      string `db:"user_id"`
 	BudgetID    string `db:"budget_id"`
 	Cost        int    `db:"cost"`
@@ -37,12 +47,12 @@ type SpendModel struct {
 	UpdatedAT   string `db:"updated_at"`
 }
 
+// CreateSpendRepository creates a new instance of SpendRepository.
 func CreateSpendRepository(db *sqlx.DB) *SpendRepository {
-
 	// Migrate the UserModel struct
 	_, err := db.Exec(spendSchema)
 	if err != nil {
-		logger.Fatal(`Failed to migrate SpendModel struct`, `err`, err)
+		spendLogger.Fatal(`Failed to migrate SpendModel struct`, `err`, err)
 	}
 
 	return &SpendRepository{
@@ -50,11 +60,19 @@ func CreateSpendRepository(db *sqlx.DB) *SpendRepository {
 	}
 }
 
+// CreateSpend creates a spend in the SpendRepository.
 func (r *SpendRepository) CreateSpend(spend *SpendModel) error {
 	_, err := r.db.NamedExec(`INSERT INTO spends (user_id, budget_id, cost, category, description, date, repeat) VALUES (:user_id, :budget_id, :cost, :category, :description, :date, :repeat)`, spend)
 	return err
 }
 
+// GetSpendByBudgetID retrieves a list of spend models by budget ID.
+//
+// Parameters:
+// - budgetID: the ID of the budget to retrieve spend models for.
+//
+// Returns:
+// - []SpendModel: a list of spend models matching the given budget ID.
 func (r *SpendRepository) GetSpendByBudgetID(budgetID uint) []SpendModel {
 	spends := []SpendModel{}
 
@@ -68,13 +86,20 @@ func (r *SpendRepository) GetSpendByBudgetID(budgetID uint) []SpendModel {
 
 	// If an error occurs
 	if err != nil {
-		logger.Error(`failed to get spends`, `err`, err)
+		spendLogger.Error(`failed to get spends`, `err`, err)
 		return nil
 	}
 
 	return spends
 }
 
+// GetSpendByUserID retrieves spends for a given user ID.
+//
+// Parameters:
+// - userID: the ID of the user to retrieve spends for.
+//
+// Returns:
+// - []SpendModel: a slice of SpendModel representing the retrieved spends.
 func (r *SpendRepository) GetSpendByUserID(userID uint) []SpendModel {
 	spends := []SpendModel{}
 
@@ -88,13 +113,21 @@ func (r *SpendRepository) GetSpendByUserID(userID uint) []SpendModel {
 
 	// If an error occurs
 	if err != nil {
-		logger.Error(`failed to get spends`, `err`, err)
+		spendLogger.Error(`failed to get spends`, `err`, err)
 		return nil
 	}
 
 	return spends
 }
 
+// GetSpendByUserIDAndBudgetID retrieves spends for a given user ID and budget ID.
+//
+// Parameters:
+// - userID: the ID of the user to retrieve spends for.
+// - budgetID: the ID of the budget to retrieve spends for.
+//
+// Returns:
+// - []SpendModel: a slice of SpendModel representing the retrieved spends.
 func (r *SpendRepository) GetSpendByUserIDAndBudgetID(userID uint, budgetID uint) []SpendModel {
 	spends := []SpendModel{}
 
@@ -108,13 +141,21 @@ func (r *SpendRepository) GetSpendByUserIDAndBudgetID(userID uint, budgetID uint
 
 	// If an error occurs
 	if err != nil {
-		logger.Error(`failed to get spends`, `err`, err)
+		spendLogger.Error(`failed to get spends`, `err`, err)
 		return nil
 	}
 
 	return spends
 }
 
+// GetSpendByUserIDAndCategory retrieves spends for a given user ID and category.
+//
+// Parameters:
+// - userID: the ID of the user to retrieve spends for.
+// - category: the category to retrieve spends for.
+//
+// Returns:
+// - []SpendModel: a slice of SpendModel representing the retrieved spends.
 func (r *SpendRepository) GetSpendByUserIDAndCategory(userID uint, category string) []SpendModel {
 	spends := []SpendModel{}
 
@@ -128,13 +169,21 @@ func (r *SpendRepository) GetSpendByUserIDAndCategory(userID uint, category stri
 
 	// If an error occurs
 	if err != nil {
-		logger.Error(`failed to get spends`, `err`, err)
+		spendLogger.Error(`failed to get spends`, `err`, err)
 		return nil
 	}
 
 	return spends
 }
 
+// GetSpendByUserIDAndDate retrieves spends for a given user ID and date.
+//
+// Parameters:
+// - userID: the ID of the user to retrieve spends for.
+// - date: the date to retrieve spends for.
+//
+// Returns:
+// - []SpendModel: a slice of SpendModel representing the retrieved spends.
 func (r *SpendRepository) GetSpendByUserIDAndDate(userID uint, date string) []SpendModel {
 	spends := []SpendModel{}
 
@@ -148,18 +197,20 @@ func (r *SpendRepository) GetSpendByUserIDAndDate(userID uint, date string) []Sp
 
 	// If an error occurs
 	if err != nil {
-		logger.Error(`failed to get spends`, `err`, err)
+		spendLogger.Error(`failed to get spends`, `err`, err)
 		return nil
 	}
 
 	return spends
 }
 
+// UpdateSpend updates a spend in the SpendRepository.
 func (r *SpendRepository) UpdateSpend(spend *SpendModel) error {
 	_, err := r.db.NamedExec(`UPDATE spends SET cost = :cost, category = :category, description = :description, date = :date, repeat = :repeat WHERE id = :id`, spend)
 	return err
 }
 
+// DeleteSpend deletes a spend from the SpendRepository.
 func (r *SpendRepository) DeleteSpend(spend *SpendModel) error {
 	_, err := r.db.NamedExec(`DELETE FROM spends WHERE id = :id`, spend)
 	return err

@@ -213,16 +213,19 @@ func (s *authService) GetUserData(c *gin.Context) {
 	if err != nil {
 		logger.Error(`failed to get access token`, `err`, err)
 		c.String(400, `failed to get access token`)
+		return
 	}
 	r, err := c.Cookie(`refresh_token`)
 	if err != nil {
 		logger.Error(`failed to get refresh token`, `err`, err)
 		c.String(400, `failed to get refresh token`)
+		return
 	}
 
 	if a == `` || r == `` {
 		logger.Error(`failed to get user data`)
 		c.String(400, `failed to get user data`)
+		return
 	}
 
 	// Verify and decode
@@ -232,6 +235,7 @@ func (s *authService) GetUserData(c *gin.Context) {
 	}); err != nil {
 		logger.Error(`failed to verify access token`, `err`, err)
 		c.String(400, `failed to get user data`)
+		return
 	}
 
 	// Check username and role
@@ -250,6 +254,7 @@ func (s *authService) GetUserData(c *gin.Context) {
 	if username == `` || role == `` {
 		logger.Error(`failed to get user data`)
 		c.String(400, `failed to get user data`)
+		return
 	}
 
 	// Get actual user info
@@ -257,6 +262,12 @@ func (s *authService) GetUserData(c *gin.Context) {
 	if err != nil {
 		logger.Error(`failed to get user`, `err`, err)
 		c.String(500, `failed to get user`)
+		return
+	}
+
+	if user == nil || user.Username == `` {
+		logger.Error(`failed to get user data`)
+		c.String(400, `failed to get user data`)
 		return
 	}
 

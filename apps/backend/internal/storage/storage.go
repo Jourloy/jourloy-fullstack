@@ -16,6 +16,7 @@ type Storage struct {
 }
 
 var (
+	// Logger for the storage package
 	logger = log.NewWithOptions(os.Stderr, log.Options{
 		Prefix: `[database]`,
 		Level:  log.DebugLevel,

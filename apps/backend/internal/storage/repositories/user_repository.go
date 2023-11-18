@@ -11,7 +11,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var logger = log.NewWithOptions(os.Stderr, log.Options{
+// Logger for user
+var userLogger = log.NewWithOptions(os.Stderr, log.Options{
 	Prefix: `[database-user]`,
 	Level:  log.DebugLevel,
 })
@@ -20,6 +21,7 @@ type UserRepository struct {
 	db *sqlx.DB
 }
 
+// Schema for user
 var userSchema = `
 CREATE TABLE IF NOT EXISTS users (
 	id SERIAL PRIMARY KEY,
@@ -49,7 +51,7 @@ func CreateUserRepository(db *sqlx.DB) *UserRepository {
 	// Migrate the UserModel struct
 	_, err := db.Exec(userSchema)
 	if err != nil {
-		logger.Fatal(`failed to migrate user schema`, `err`, err)
+		userLogger.Fatal(`failed to migrate user schema`, `err`, err)
 	}
 
 	return &UserRepository{
@@ -103,7 +105,7 @@ func (r *UserRepository) GetUserByUsername(username string) (*UserModel, error) 
 
 	// If an error occurs
 	if err != nil {
-		logger.Error(`failed to get user`, `err`, err)
+		userLogger.Error(`failed to get user`, `err`, err)
 		return nil, err
 	}
 
