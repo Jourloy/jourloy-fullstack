@@ -85,7 +85,12 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 	}
 
 	// Get user by username
-	user := s.storage.User.GetUserByUsername(body.Username)
+	user, err := s.storage.User.GetUserByUsername(body.Username)
+	if err != nil {
+		logger.Error(`failed to get user`, `err`, err)
+		c.String(500, `failed to get user`)
+		return
+	}
 
 	if user == nil {
 		// If user doesn't exist create
@@ -104,7 +109,12 @@ func (s *authService) LoginOrRegister(c *gin.Context) {
 		}
 
 		// Get actual user info
-		newUser := s.storage.User.GetUserByUsername(body.Username)
+		newUser, err := s.storage.User.GetUserByUsername(body.Username)
+		if err != nil {
+			logger.Error(`failed to get user`, `err`, err)
+			c.String(500, `failed to get user`)
+			return
+		}
 
 		c.JSON(200, gin.H{
 			`username`: newUser.Username,
@@ -184,7 +194,12 @@ func (s *authService) Register(c *gin.Context) {
 	}
 
 	// Get actual user info
-	newUser := s.storage.User.GetUserByUsername(body.Username)
+	newUser, err := s.storage.User.GetUserByUsername(body.Username)
+	if err != nil {
+		logger.Error(`failed to get user`, `err`, err)
+		c.String(500, `failed to get user`)
+		return
+	}
 
 	c.JSON(200, gin.H{
 		`username`: newUser.Username,
@@ -238,7 +253,12 @@ func (s *authService) GetUserData(c *gin.Context) {
 	}
 
 	// Get actual user info
-	user := s.storage.User.GetUserByUsername(username)
+	user, err := s.storage.User.GetUserByUsername(username)
+	if err != nil {
+		logger.Error(`failed to get user`, `err`, err)
+		c.String(500, `failed to get user`)
+		return
+	}
 
 	// Add JWT tokens to cookies
 	if err := s.addJWTCookies(UserData{Username: user.Username}, c); err != nil {
@@ -255,7 +275,10 @@ func (s *authService) GetUserData(c *gin.Context) {
 
 func (s *authService) registerUser(username string, password string) error {
 	// Get user by username
-	user := s.storage.User.GetUserByUsername(username)
+	user, err := s.storage.User.GetUserByUsername(username)
+	if err != nil {
+		return errors.New(`failed to get user`)
+	}
 
 	if user != nil {
 		return errors.New(`user already exists`)
@@ -292,9 +315,12 @@ func (s *authService) registerUser(username string, password string) error {
 func (s *authService) addJWTCookies(body UserData, c *gin.Context) error {
 	a, r := s.generateJWTTokens(body.Username, `user`)
 
-	user := s.storage.User.GetUserByUsername(body.Username)
+	user, err := s.storage.User.GetUserByUsername(body.Username)
+	if err != nil {
+		return err
+	}
 	user.RefreshTokens = append(user.RefreshTokens, r)
-	err := s.storage.User.UpdateUser(user)
+	err = s.storage.User.UpdateUser(user)
 	if err != nil {
 		return err
 	}

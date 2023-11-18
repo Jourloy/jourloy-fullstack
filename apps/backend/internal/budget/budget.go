@@ -88,8 +88,8 @@ func (s *budgetService) check(c *gin.Context) (*repositories.UserModel, bool) {
 	}
 
 	// Get user
-	user := s.storage.User.GetUserByUsername(username.(string))
-	if user == nil {
+	user, err := s.storage.User.GetUserByUsername(username.(string))
+	if user == nil || err != nil {
 		logger.Error(`failed to get user`)
 		c.String(500, `failed to get user`)
 		return nil, false

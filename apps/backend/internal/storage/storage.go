@@ -5,9 +5,8 @@ import (
 
 	"github.com/Jourloy/jourloy-fullstack/tree/main/apps/backend/internal/storage/repositories"
 	"github.com/charmbracelet/log"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
-	lg "gorm.io/gorm/logger"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 type Storage struct {
@@ -38,9 +37,7 @@ func CreateStorage() *Storage {
 	parseENV()
 
 	// Create connection
-	db, err := gorm.Open(postgres.Open(DatabaseDNS), &gorm.Config{
-		Logger: lg.Default.LogMode(lg.Silent),
-	})
+	db, err := sqlx.Connect(`postgres`, DatabaseDNS)
 	if err != nil {
 		logger.Fatal(`Failed to connect to database`, `err`, err)
 	}
