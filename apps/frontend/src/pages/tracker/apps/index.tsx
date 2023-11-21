@@ -1,18 +1,28 @@
-import {AppShell, Burger, Button} from "@mantine/core";
+import {AppShell, Burger, Button, Divider} from "@mantine/core";
 import {useDisclosure} from "@mantine/hooks";
 import TrackerDefault from "./default";
-import {useState} from "react";
-import {useUserStore} from "../../../store/user.store";
+import {useEffect, useState} from "react";
 import TrackerBlocked from "./blocked";
+import {useSearchParams} from "react-router-dom";
+import BudgetIndex from "./budget";
+import {store} from "src/store/store";
+import LoginAPI from "src/pages/login/api";
+import BudgetAPI from "./budget/budgetAPI";
+import DefaultLoading from "src/components/layout/Loading";
 
 type TActiveApps = `default` | `calendar` | `budget` | `party` | `settings`;
 
 export default function TrackerApp() {
-	const userStore = useUserStore(state => state);
+	const loginAPI = new LoginAPI();
+	const budgetAPI = new BudgetAPI();
 
+	const [searchParams, setSearchParams] = useSearchParams();
 	const [opened, {toggle}] = useDisclosure();
 
-	const [activeApp, setActiveApp] = useState<TActiveApps>(`default`);
+	const [loading, setLoading] = useState(true);
+	const [activeApp, setActiveApp] = useState<TActiveApps>(
+		(searchParams.get(`app`) as TActiveApps) || `default`
+	);
 
 	const getActiveAppDisabled = (target: TActiveApps) => {
 		if (target === activeApp) return true;
@@ -22,17 +32,36 @@ export default function TrackerApp() {
 	const apps = {
 		default: <TrackerDefault />,
 		calendar: <div>Calendar</div>,
-		budget: <div>Budget</div>,
+		budget: <BudgetIndex />,
 		party: <div>Party</div>,
 		settings: <div>Settings</div>,
 		blocked: <TrackerBlocked />,
 	};
 
 	const getActiveApp = (target: TActiveApps) => {
-		if (!userStore.logined) return apps.blocked;
+		if (!store.getState().userReducer.logined) return apps.blocked;
 		return apps[target];
 	};
 
+	useEffect(() => {
+		if (!store.getState().userReducer.logined) {
+			loginAPI
+				.updateUserInStore()
+				.then(async () => {
+					await budgetAPI.updateBudgetsInStore();
+				})
+				.finally(() => {
+					setLoading(false);
+				});
+		} else {
+			budgetAPI.updateBudgetsInStore().finally(() => {
+				setLoading(false);
+			});
+		}
+	});
+
+	if (loading) return <DefaultLoading />;
+	
 	return (
 		<AppShell
 			header={{height: 50}}
@@ -40,16 +69,22 @@ export default function TrackerApp() {
 				width: 250,
 				breakpoint: `sm`,
 				collapsed: {
-					mobile: !opened || !userStore.logined,
-					desktop: !opened || !userStore.logined,
+					mobile: !opened || !store.getState().userReducer.logined,
+					desktop: !opened || !store.getState().userReducer.logined,
 				},
 			}}
 			padding={`md`}
 		>
-			<AppShell.Header className={`flex flex-row justify-between items-center p-5`}>
-				<Burger opened={opened} onClick={toggle} size={`sm`} hidden={!userStore.logined} />
-				<div hidden={userStore.logined} />
-				<h1 className={`uppercase text-[30px]`}>Трекер</h1>
+			<AppShell.Header className={`grid grid-cols-3 items-center px-5`}>
+				<Burger
+					className={`col-span-1`}
+					opened={opened}
+					onClick={toggle}
+					size={`sm`}
+					hidden={!store.getState().userReducer.logined}
+				/>
+				<div className={`col-span-1`} hidden={store.getState().userReducer.logined} />
+				<h1 className={`uppercase text-[30px] text-center col-span-1`}>Трекер</h1>
 				<div />
 			</AppShell.Header>
 
@@ -57,9 +92,28 @@ export default function TrackerApp() {
 				<AppShell.Section grow className={`flex flex-col w-full space-y-5`}>
 					<Button
 						color={`black`}
+						variant={`subtle`}
+						disabled={getActiveAppDisabled(`default`)}
+						onClick={() => {
+							setSearchParams({app: `default`});
+							setActiveApp(`default`);
+							toggle();
+						}}
+					>
+						Главная
+					</Button>
+
+					<Divider className={`w-full`} />
+
+					<Button
+						color={`black`}
 						variant={`outline`}
 						disabled={getActiveAppDisabled(`calendar`)}
-						onClick={() => setActiveApp(`calendar`)}
+						onClick={() => {
+							setSearchParams({app: `calendar`});
+							setActiveApp(`calendar`);
+							toggle();
+						}}
 					>
 						Календарь
 					</Button>
@@ -67,7 +121,11 @@ export default function TrackerApp() {
 						color={`black`}
 						variant={`outline`}
 						disabled={getActiveAppDisabled(`budget`)}
-						onClick={() => setActiveApp(`budget`)}
+						onClick={() => {
+							setSearchParams({app: `budget`});
+							setActiveApp(`budget`);
+							toggle();
+						}}
 					>
 						Бюджет
 					</Button>
@@ -75,7 +133,11 @@ export default function TrackerApp() {
 						color={`black`}
 						variant={`outline`}
 						disabled={getActiveAppDisabled(`party`)}
-						onClick={() => setActiveApp(`party`)}
+						onClick={() => {
+							setSearchParams({app: `party`});
+							setActiveApp(`party`);
+							toggle();
+						}}
 					>
 						Вечеринка
 					</Button>
@@ -86,7 +148,11 @@ export default function TrackerApp() {
 						color={`black`}
 						variant={`outline`}
 						disabled={getActiveAppDisabled(`settings`)}
-						onClick={() => setActiveApp(`settings`)}
+						onClick={() => {
+							setSearchParams({app: `settings`});
+							setActiveApp(`settings`);
+							toggle();
+						}}
 					>
 						Настройки
 					</Button>
