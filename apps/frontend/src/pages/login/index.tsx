@@ -3,10 +3,11 @@ import {IconArrowNarrowLeft} from "@tabler/icons-react";
 import {z} from "zod";
 import {useForm, zodResolver} from "@mantine/form";
 import LoginAPI from "./api";
-import {useState} from "react";
-import {useUserStore} from "../../store/user.store";
+import {useEffect, useState} from "react";
 import {showNotification} from "@mantine/notifications";
 import {useNavigate} from "react-router-dom";
+import {store} from "src/store/store";
+import {userActions} from "src/store/features/user.slice";
 
 export default function LoginIndex() {
 	const api = new LoginAPI();
@@ -38,12 +39,7 @@ export default function LoginIndex() {
 		api.login(values.login, values.password)
 			.then(data => {
 				if (data) {
-					useUserStore.setState({
-						username: data.data.username,
-						avatar: data.data.avatar,
-						role: data.data.role,
-						logined: true,
-					});
+					store.dispatch(userActions.forceUpdate({...data.data, logined: true}));
 					showNotification({
 						title: `Авторизация прошла успешно`,
 						message: `Добро пожаловать, ${data.data.username}`,
@@ -61,10 +57,34 @@ export default function LoginIndex() {
 					color: `red`,
 				});
 			})
+			.catch(e => {
+				const code = e.response?.status;
+				if (code === 401 || code === 403) {
+					showNotification({
+						title: `Авторизация не удалась`,
+						message: `Неправильное имя пользователя или пароль`,
+						autoClose: 5000,
+						color: `red`,
+					});
+				} else {
+					showNotification({
+						title: `Авторизация не удалась`,
+						message: `Проблемы на сервере`,
+						autoClose: 5000,
+						color: `red`,
+					});
+				}
+			})
 			.finally(() => {
 				setLoading(false);
 			});
 	};
+
+	useEffect(() => {
+		if (store.getState().userReducer.logined) {
+			navigate(`/`);
+		}
+	}, []);
 
 	return (
 		<main className={`flex flex-col justify-center items-center min-h-screen`}>
