@@ -100,7 +100,17 @@ func (r *BudgetRepository) GetBudgetsByUserID(userID string) []BudgetModel {
 
 // UpdateBudget updates the budget in the BudgetRepository.
 func (r *BudgetRepository) UpdateBudget(budget *BudgetModel) error {
-	_, err := r.db.NamedExec(`UPDATE budgets SET name = :name, limit = :limit, period_limit = :period_limit, period = :period WHERE id = :id`, budget)
+	_, err := r.db.NamedExec(`
+	UPDATE
+		budgets 
+	SET 
+		name = :name, 
+		current_limit = :current_limit, 
+		period_limit = :period_limit, 
+		period = :period 
+	WHERE 
+		id = :id AND
+		user_id = :user_id`, budget)
 	return err
 }
 
