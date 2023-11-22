@@ -23,9 +23,9 @@ import BugForm from "../../../components/inputs/bugForm";
 import ErrorNotification from "../../../components/logical/notification/error.notification";
 import SuccessNotification from "../../../components/logical/notification/success.notification";
 import {formatter} from "../../../context";
-import {partyActions} from "../../../store/features/party.slice";
-import {userActions} from "../../../store/features/user.slice";
-import {store} from "../../../store/store";
+import {partyActions} from "../../../store-older/features/party.slice";
+import {userActions} from "../../../store-older/features/user.slice";
+import {store} from "../../../store-older/store";
 import LoginAPI from "../../login/api";
 
 export default function PartyApp() {

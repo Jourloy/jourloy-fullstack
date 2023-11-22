@@ -1,8 +1,8 @@
 import {CancelToken} from "axios";
 import BackendContext from "../../context/backend";
 import {TUser} from "../../types";
-import {store} from "../../store/store";
-import {userActions} from "../../store/features/user.slice";
+import {store} from "../../store-older/store";
+import {userActions} from "../../store-older/features/user.slice";
 
 export default class LoginAPI extends BackendContext {
 	constructor() {

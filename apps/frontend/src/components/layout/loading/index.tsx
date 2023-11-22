@@ -1,6 +1,9 @@
-import {Center, Container, Grid, Loader, Title} from "@mantine/core";
+import {Center, Container, Grid, Loader} from "@mantine/core";
+import {useDocumentTitle} from "@mantine/hooks";
 
 export default function DefaultLoading() {
+	useDocumentTitle(`Загрузка`);
+
 	return (
 		<Container
 			style={{
@@ -23,7 +26,7 @@ export default function DefaultLoading() {
 				</Grid.Col>
 
 				<Grid.Col>
-					<Title align={`center`}>Проверяем и загружаем</Title>
+					<h1 className={`text-[40px] text-center`}>Проверяем и загружаем</h1>
 				</Grid.Col>
 			</Grid>
 		</Container>

@@ -5,8 +5,8 @@ import {
 	Title,
 	Stack,
 } from "@mantine/core";
-import {store} from "../../../../store/store";
-import {userActions} from "../../../../store/features/user.slice";
+import {store} from "../../../../store-older/store";
+import {userActions} from "../../../../store-older/features/user.slice";
 import LoginAPI from "../../../../pages/login/api";
 import {useState} from "react";
 import {useNavigate} from "react-router-dom";

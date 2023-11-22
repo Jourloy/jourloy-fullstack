@@ -1,7 +1,7 @@
 import {Card, Grid, TextInput, Title, Center, Pagination} from "@mantine/core";
 import {IconSearch} from "@tabler/icons-react";
 import {useState} from "react";
-import {store} from "../../../../store/store";
+import {store} from "../../../../store-older/store";
 import {TSpend, IPlannedSpend} from "../../../../types";
 import PlannedSpend from "./planned";
 

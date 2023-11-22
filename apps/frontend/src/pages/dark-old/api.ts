@@ -1,8 +1,8 @@
 import { CancelToken } from "axios";
 import BackendContext from "../../context/backend";
 import { TDarkAttribute, TDarkClass } from "../../types";
-import { store } from "../../store/store";
-import { darkActions } from "../../store/features/dark.slice";
+import { store } from "../../store-older/store";
+import { darkActions } from "../../store-older/features/dark.slice";
 
 export default class DarkAPI extends BackendContext {
 	constructor() {

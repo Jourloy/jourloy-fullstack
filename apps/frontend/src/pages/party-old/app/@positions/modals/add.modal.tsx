@@ -11,10 +11,10 @@ import {
 } from "@mantine/core";
 import {useState} from "react";
 import PartyPositionLogic from "../../logic";
-import {store} from "../../../../../store/store";
+import {store} from "../../../../../store-older/store";
 import ErrorNotification from "../../../../../components/logical/notification/error.notification";
 import SuccessNotification from "../../../../../components/logical/notification/success.notification";
-import {partyActions} from "../../../../../store/features/party.slice";
+import {partyActions} from "../../../../../store-older/features/party.slice";
 import PartyAPI from "../../../api";
 
 type TProps = {

@@ -9,7 +9,7 @@ import {
 	Title,
 	UnstyledButton,
 } from "@mantine/core";
-import {store} from "../../../store/store";
+import {store} from "../../../store-older/store";
 import {useEffect, useState} from "react";
 import LoginAPI from "../../../pages/login/api";
 import HeaderSettingsModal from "./modals/settings.modal";

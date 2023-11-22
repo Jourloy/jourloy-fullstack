@@ -2,10 +2,10 @@ import {Button, Card, Center, Container, Divider, Flex, Stack, Text, Title} from
 import {IconArrowNarrowLeft, IconBrandGoogle} from "@tabler/icons-react";
 import LoginAPI from "./api";
 import {useEffect, useState} from "react";
-import {store} from "../../store/store";
-import {userActions} from "../../store/features/user.slice";
+import {store} from "../../store-older/store";
+import {userActions} from "../../store-older/features/user.slice";
 import {useLocation, useNavigate} from "react-router-dom";
-import DefaultLoading from "../../components/layout/loading";
+import DefaultLoading from "../../components/layout/Loading";
 import {useDocumentTitle} from "@mantine/hooks";
 
 export default function Login() {

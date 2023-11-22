@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {store} from "../../../store/store";
+import {store} from "../../../store-older/store";
 import {
 	Flex,
 	Grid,
@@ -22,7 +22,7 @@ import SpendList from "./@components/spendList";
 import PlannedList from "./@components/plannedList";
 import TrackerAPI from "../api";
 import {useNavigate} from "react-router-dom";
-import DefaultLoading from "../../../components/layout/loading";
+import DefaultLoading from "../../../components/layout/Loading";
 import {IconCup} from "@tabler/icons-react";
 import {useDocumentTitle} from "@mantine/hooks";
 import BugForm from "../../../components/inputs/bugForm";

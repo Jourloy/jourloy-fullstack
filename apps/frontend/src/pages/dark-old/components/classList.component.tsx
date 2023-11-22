@@ -1,7 +1,7 @@
 import {Grid} from "@mantine/core";
 import {useEffect, useState} from "react";
 import {TDarkClass} from "../../../types";
-import {store} from "../../../store/store";
+import {store} from "../../../store-older/store";
 import Class from "./class.component";
 import DarkAPI from "../api";
 

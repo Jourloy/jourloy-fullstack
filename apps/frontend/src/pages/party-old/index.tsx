@@ -1,11 +1,11 @@
 import {useEffect, useState} from "react";
 import PartyCreate from "./@create";
-import {store} from "../../store/store";
+import {store} from "../../store-older/store";
 import {useNavigate} from "react-router-dom";
 import PartyAPI from "./api";
 import {CancelToken} from "axios";
-import {partyActions} from "../../store/features/party.slice";
-import DefaultLoading from "../../components/layout/loading";
+import {partyActions} from "../../store-older/features/party.slice";
+import DefaultLoading from "../../components/layout/Loading";
 import {useDocumentTitle} from "@mantine/hooks";
 
 export default function PartyIndex() {

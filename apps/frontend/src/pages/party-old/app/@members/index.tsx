@@ -1,6 +1,6 @@
 import {Grid, Title, Pagination, Center, TextInput, Menu, Button} from "@mantine/core";
 import {useState} from "react";
-import {store} from "../../../../store/store";
+import {store} from "../../../../store-older/store";
 import {TMember} from "../../../../types";
 import PartyMemberComponent from "./components/member.component";
 import {IconSearch} from "@tabler/icons-react";

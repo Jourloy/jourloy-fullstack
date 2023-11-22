@@ -1,7 +1,7 @@
 import {Grid, TextInput} from "@mantine/core";
 import {IconSearch} from "@tabler/icons-react";
 import {useEffect, useState} from "react";
-import {store} from "../../../store/store";
+import {store} from "../../../store-older/store";
 import {TDarkAttribute} from "../../../types";
 import DarkAPI from "../api";
 import Attribute from "./attribute.component";

@@ -1,6 +1,6 @@
 import {Button, Center, Modal, Pagination, Stack, TextInput, Title} from "@mantine/core";
 import {useState} from "react";
-import {store} from "../../../../store/store";
+import {store} from "../../../../store-older/store";
 import HistorySpend from "../@components/spend";
 import {TSpend} from "../../../../types";
 import {IconSearch} from "@tabler/icons-react";

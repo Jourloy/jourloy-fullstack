@@ -14,8 +14,8 @@ import {
 	Title,
 } from "@mantine/core";
 import PartyAPI from "../api";
-import {partyActions} from "../../../store/features/party.slice";
-import {store} from "../../../store/store";
+import {partyActions} from "../../../store-older/features/party.slice";
+import {store} from "../../../store-older/store";
 import {useState} from "react";
 import {formatter} from "../../../context";
 import {useNavigate} from "react-router-dom";

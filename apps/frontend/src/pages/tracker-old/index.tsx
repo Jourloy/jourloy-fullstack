@@ -16,7 +16,7 @@ import {
 	Progress,
 } from "@mantine/core";
 import ScrollHint from "../../components/layout/ScrollHint";
-import {store} from "../../store/store";
+import {store} from "../../store-older/store";
 import {useDocumentTitle} from "@mantine/hooks";
 import HistorySpend from "./app/@components/spend";
 import {formatter} from "../../context";

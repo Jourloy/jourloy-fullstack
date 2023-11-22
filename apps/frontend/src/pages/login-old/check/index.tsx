@@ -1,7 +1,7 @@
 import {useEffect} from "react";
 import {useNavigate, useSearchParams} from "react-router-dom";
-import {userActions} from "../../../store/features/user.slice";
-import {store} from "../../../store/store";
+import {userActions} from "../../../store-older/features/user.slice";
+import {store} from "../../../store-older/store";
 import SuccessNotification from "../../../components/logical/notification/success.notification";
 import ErrorNotification from "../../../components/logical/notification/error.notification";
 

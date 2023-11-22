@@ -10,7 +10,7 @@ import {
 	Pagination,
 	TextInput,
 } from "@mantine/core";
-import {store} from "../../../../store/store";
+import {store} from "../../../../store-older/store";
 import {useState} from "react";
 import {TMember, TPosition} from "../../../../types";
 import PositionModal from "./modals/position.modal";

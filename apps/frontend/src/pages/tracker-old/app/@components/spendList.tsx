@@ -1,6 +1,6 @@
 import {Card, Grid, Title} from "@mantine/core";
 import {useState} from "react";
-import {store} from "../../../../store/store";
+import {store} from "../../../../store-older/store";
 import {TSpend} from "../../../../types";
 import HistorySpend from "./spend";
 import SpendHistoryModal from "../@modals/spendHistory";

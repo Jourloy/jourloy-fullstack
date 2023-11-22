@@ -1,8 +1,8 @@
 import {CancelToken} from "axios";
 import BackendContext from "../../context/backend";
 import {TTracker} from "../../types";
-import {store} from "../../store/store";
-import {trackerActions} from "../../store/features/tracker.slice";
+import {store} from "../../store-older/store";
+import {trackerActions} from "../../store-older/features/tracker.slice";
 
 export default class TrackerAPI extends BackendContext {
 	constructor() {

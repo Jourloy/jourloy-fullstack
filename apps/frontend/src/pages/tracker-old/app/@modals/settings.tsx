@@ -13,11 +13,11 @@ import {
 	Stack,
 } from "@mantine/core";
 import {useState} from "react";
-import {store} from "../../../../store/store";
+import {store} from "../../../../store-older/store";
 import {useForm} from "@mantine/form";
 import {DatePickerInput} from "@mantine/dates";
 import TrackerAPI from "../../api";
-import {trackerActions} from "../../../../store/features/tracker.slice";
+import {trackerActions} from "../../../../store-older/features/tracker.slice";
 import {useNavigate} from "react-router-dom";
 import {formatter} from "../../../../context";
 import LongPressButton from "../../../../components/actions/longPressButton";

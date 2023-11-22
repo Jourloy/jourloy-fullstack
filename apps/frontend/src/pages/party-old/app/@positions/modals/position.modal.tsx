@@ -12,8 +12,8 @@ import {
 import {useState} from "react";
 import ErrorNotification from "../../../../../components/logical/notification/error.notification";
 import SuccessNotification from "../../../../../components/logical/notification/success.notification";
-import {partyActions} from "../../../../../store/features/party.slice";
-import {store} from "../../../../../store/store";
+import {partyActions} from "../../../../../store-older/features/party.slice";
+import {store} from "../../../../../store-older/store";
 import {TPosition} from "../../../../../types";
 import PartyAPI from "../../../api";
 import PartyPositionLogic from "../../logic";

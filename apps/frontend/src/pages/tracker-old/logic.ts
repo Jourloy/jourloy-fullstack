@@ -1,4 +1,4 @@
-import {store} from "../../store/store";
+import {store} from "../../store-older/store";
 import {TSpend} from "../../types";
 import TrackerAPI from "./api";
 

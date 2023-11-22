@@ -1,8 +1,8 @@
 import {CancelToken} from "axios";
 import BackendContext from "../../context/backend";
 import {TCalculator, TMember} from "../../types";
-import { store } from "../../store/store";
-import { partyActions } from "../../store/features/party.slice";
+import { store } from "../../store-older/store";
+import { partyActions } from "../../store-older/features/party.slice";
 
 export default class PartyAPI extends BackendContext {
 	constructor() {

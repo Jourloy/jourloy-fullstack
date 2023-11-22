@@ -4,7 +4,7 @@ import BuyCoffeButton from "../../components/actions/buyCoffeButton";
 import ClassList from "./components/classList.component";
 import BugButton from "./components/bugButton";
 import {useState} from "react";
-import {store} from "../../store/store";
+import {store} from "../../store-older/store";
 import AddClassButton from "./components/addClassButton.component";
 import AddAttributeButton from "./components/addAttributeButton.component";
 
