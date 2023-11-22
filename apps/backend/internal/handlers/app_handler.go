@@ -8,5 +8,6 @@ import (
 func RegisterAppHandler(g *gin.RouterGroup) {
 	appService := app.CreateAppService()
 
+	// Live check
 	g.GET(`/live`, appService.LiveCheck)
 }

@@ -35,16 +35,16 @@ CREATE TABLE IF NOT EXISTS spends (
 )`
 
 type SpendModel struct {
-	ID          uint   `db:"id"`
-	UserID      string `db:"user_id"`
-	BudgetID    string `db:"budget_id"`
-	Cost        int    `db:"cost"`
-	Category    string `db:"category"`
-	Description string `db:"description"`
-	Date        string `db:"date"`
-	Repeat      string `db:"repeat"`
-	CreatedAT   string `db:"created_at"`
-	UpdatedAT   string `db:"updated_at"`
+	ID          uint    `db:"id"`
+	UserID      uint    `db:"user_id"`
+	BudgetID    uint    `db:"budget_id"`
+	Cost        int     `db:"cost"`
+	Category    string  `db:"category"`
+	Description *string `db:"description"`
+	Date        *string `db:"date"`
+	Repeat      *string `db:"repeat"`
+	CreatedAT   string  `db:"created_at"`
+	UpdatedAT   string  `db:"updated_at"`
 }
 
 // CreateSpendRepository creates a new instance of SpendRepository.
@@ -128,11 +128,11 @@ func (r *SpendRepository) GetSpendByUserID(userID uint) []SpendModel {
 //
 // Returns:
 // - []SpendModel: a slice of SpendModel representing the retrieved spends.
-func (r *SpendRepository) GetSpendByUserIDAndBudgetID(userID uint, budgetID uint) []SpendModel {
-	spends := []SpendModel{}
+func (r *SpendRepository) GetSpendByUserIDAndBudgetID(userID uint, budgetID uint) *SpendModel {
+	spend := SpendModel{}
 
 	// Get spend
-	err := r.db.Select(&spends, `SELECT * FROM spends WHERE user_id = $1 AND budget_id = $2`, userID, budgetID)
+	err := r.db.Get(&spend, `SELECT * FROM spends WHERE user_id = $1 AND budget_id = $2`, userID, budgetID)
 
 	// If no spends are found
 	if errors.Is(err, sql.ErrNoRows) {
@@ -145,7 +145,27 @@ func (r *SpendRepository) GetSpendByUserIDAndBudgetID(userID uint, budgetID uint
 		return nil
 	}
 
-	return spends
+	return &spend
+}
+
+func (r *SpendRepository) GetSpendByUserIDAndSpendID(userID uint, id uint) *SpendModel {
+	spend := SpendModel{}
+
+	// Get spend
+	err := r.db.Get(&spend, `SELECT * FROM spends WHERE user_id = $1 AND id = $2`, userID, id)
+
+	// If no spends are found
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil
+	}
+
+	// If an error occurs
+	if err != nil {
+		spendLogger.Error(`failed to get spends`, `err`, err)
+		return nil
+	}
+
+	return &spend
 }
 
 // GetSpendByUserIDAndCategory retrieves spends for a given user ID and category.
@@ -212,6 +232,6 @@ func (r *SpendRepository) UpdateSpend(spend *SpendModel) error {
 
 // DeleteSpend deletes a spend from the SpendRepository.
 func (r *SpendRepository) DeleteSpend(spend *SpendModel) error {
-	_, err := r.db.NamedExec(`DELETE FROM spends WHERE id = :id`, spend)
+	_, err := r.db.NamedExec(`DELETE FROM spends WHERE id = :id AND user_id = :user_id`, spend)
 	return err
 }

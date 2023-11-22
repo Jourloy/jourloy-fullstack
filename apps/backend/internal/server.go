@@ -58,6 +58,7 @@ func StartServer() {
 	app := r.Group(`/`)
 	auth := r.Group(`/auth`)
 	budget := r.Group(`/budget`)
+	spend := r.Group(`/spend`)
 
 	// Storage
 	s := storage.CreateStorage()
@@ -66,6 +67,7 @@ func StartServer() {
 	handlers.RegisterAppHandler(app)
 	handlers.RegisterAuthHandler(auth, s)
 	handlers.RegisterBudgetHandler(budget, s)
+	handlers.RegisterSpendHandler(spend, s)
 
 	// Start server
 	logger.Info(`Server started on port ` + strconv.Itoa(*Port))

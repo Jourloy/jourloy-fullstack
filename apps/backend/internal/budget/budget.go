@@ -52,12 +52,13 @@ func (s *budgetService) CreateBudget(c *gin.Context) {
 
 	// Create budget
 	err := s.storage.Budget.CreateBudget(&repositories.BudgetModel{
-		UserID:      user.ID,
+		UserID:      uint(user.ID),
 		Name:        body.Name,
 		Limit:       body.Limit,
 		PeriodLimit: body.PeriodLimit,
 		Period:      body.Period,
 	})
+
 	if err != nil {
 		logger.Error(`failed to create budget`, `err`, err)
 		c.String(500, `failed to create budget`)
@@ -67,21 +68,33 @@ func (s *budgetService) CreateBudget(c *gin.Context) {
 	c.String(200, `ok`)
 }
 
+type SpendResponse struct {
+	ID          uint    `json:"id"`
+	Cost        int     `json:"cost"`
+	Category    string  `json:"category"`
+	Description *string `json:"description"`
+	Date        *string `json:"date"`
+	Repeat      *string `json:"repeat"`
+	CreatedAT   string  `json:"createdAt"`
+	UpdatedAT   string  `json:"updatedAt"`
+}
+
 type BudgetResponse struct {
-	ID          uint                      `json:"id"`
-	Name        string                    `json:"name"`
-	Limit       int                       `json:"limit"`
-	PeriodLimit int                       `json:"periodLimit"`
-	Period      string                    `json:"period"`
-	StartDate   string                    `json:"startDate"`
-	CreatedAT   string                    `json:"createdAt"`
-	UpdatedAT   string                    `json:"updatedAt"`
-	DaysPassed  int                       `json:"daysPassed"`
-	DaysLeft    int                       `json:"daysLeft"`
-	TodayLimit  int                       `json:"todayLimit"`
-	MonthIncome int                       `json:"monthIncome"`
-	MonthSpend  int                       `json:"monthSpend"`
-	Spends      []repositories.SpendModel `json:"spends"`
+	ID          uint            `json:"id"`
+	Name        string          `json:"name"`
+	Limit       int             `json:"limit"`
+	PeriodLimit int             `json:"periodLimit"`
+	Period      string          `json:"period"`
+	StartDate   string          `json:"startDate"`
+	CreatedAT   string          `json:"createdAt"`
+	UpdatedAT   string          `json:"updatedAt"`
+	DaysPassed  int             `json:"daysPassed"`
+	DaysLeft    int             `json:"daysLeft"`
+	TodayLimit  int             `json:"todayLimit"`
+	MonthIncome int             `json:"monthIncome"`
+	MonthSpend  int             `json:"monthSpend"`
+	Spends      []SpendResponse `json:"spends"`
+	TodayBudget int             `json:"todayBudget"`
 }
 
 func (s *budgetService) GetBudgets(c *gin.Context) {
@@ -108,6 +121,8 @@ func (s *budgetService) GetBudgets(c *gin.Context) {
 }
 
 func (s *budgetService) calculateBudget(budget *repositories.BudgetModel) *BudgetResponse {
+	spendsResponse := []SpendResponse{}
+
 	// Calculate days passed
 	startDay, err := time.Parse(`2006-01-02T15:04:05.000000Z`, budget.StartDate)
 	if err != nil {
@@ -122,6 +137,21 @@ func (s *budgetService) calculateBudget(budget *repositories.BudgetModel) *Budge
 	monthSpend := 0
 	monthIncome := 0
 	for _, spend := range budget.Spends {
+		spendsResponse = append(spendsResponse, SpendResponse{
+			ID:          spend.ID,
+			Cost:        spend.Cost,
+			Category:    spend.Category,
+			Description: spend.Description,
+			Date:        spend.Date,
+			Repeat:      spend.Repeat,
+			CreatedAT:   spend.CreatedAT,
+			UpdatedAT:   spend.UpdatedAT,
+		})
+
+		if spend.Date != nil {
+			continue
+		}
+
 		spendsCost += spend.Cost
 
 		spendDate, err := time.Parse(`2006-01-02T15:04:05.000000Z`, spend.CreatedAT)
@@ -134,13 +164,14 @@ func (s *budgetService) calculateBudget(budget *repositories.BudgetModel) *Budge
 			continue
 		}
 
-		if spend.Cost > 0 {
+		if spend.Cost < 0 {
 			monthSpend += spend.Cost
 		} else {
 			monthIncome += spend.Cost
 		}
 	}
 	todayLimit := budget.PeriodLimit*daysPassed + spendsCost
+	todayBudget := budget.Limit - todayLimit
 
 	// Calculate days left
 	daysLeft := budget.Limit/budget.PeriodLimit - daysPassed
@@ -157,9 +188,10 @@ func (s *budgetService) calculateBudget(budget *repositories.BudgetModel) *Budge
 		DaysPassed:  daysPassed,
 		DaysLeft:    daysLeft,
 		TodayLimit:  todayLimit,
-		Spends:      budget.Spends,
+		Spends:      spendsResponse,
 		MonthSpend:  monthSpend,
 		MonthIncome: monthIncome,
+		TodayBudget: todayBudget,
 	}
 }
 

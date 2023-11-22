@@ -9,7 +9,12 @@ import (
 func RegisterAuthHandler(g *gin.RouterGroup, s *storage.Storage) {
 	authService := auth.CreateAuthService(s)
 
+	// Login or register
 	g.POST(`/login`, authService.LoginOrRegister)
+
+	// Register
 	g.POST(`/register`, authService.Register)
+
+	// Get user
 	g.POST(`/user`, authService.GetUserData)
 }

@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS users (
 )`
 
 type UserModel struct {
-	ID            string         `db:"id"`
+	ID            uint           `db:"id"`
 	Username      string         `db:"username"`
 	Password      string         `db:"password"`
 	Role          string         `db:"role"`

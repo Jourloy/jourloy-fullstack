@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS budgets (
 // Budget models with spend relationship
 type BudgetModel struct {
 	ID          uint   `db:"id"`
-	UserID      string `db:"user_id"`
+	UserID      uint   `db:"user_id"`
 	Name        string `db:"name"`
 	Limit       int    `db:"current_limit"`
 	PeriodLimit int    `db:"period_limit"`
@@ -73,7 +73,7 @@ func (r *BudgetRepository) CreateBudget(budget *BudgetModel) error {
 //
 // Returns:
 // - []BudgetModel: a slice of BudgetModel representing the retrieved budgets.
-func (r *BudgetRepository) GetBudgetsByUserID(userID string) []BudgetModel {
+func (r *BudgetRepository) GetBudgetsByUserID(userID uint) []BudgetModel {
 	budgets := []BudgetModel{}
 
 	// Get budgets
