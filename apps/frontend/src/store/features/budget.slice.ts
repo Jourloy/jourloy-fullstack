@@ -26,10 +26,12 @@ export type TBudget = {
 	monthIncome: number;
 	createdAt: string;
 	updatedAt: string;
+	todayBudget: number;
 };
 
 type BudgetState = {
 	budgets: TBudget[];
+	currentBudget?: TBudget;
 };
 
 const initialState = {
@@ -44,6 +46,9 @@ export const budgetSlice = createSlice({
 		forceUpdate: (state, action: PayloadAction<TBudget[]>) => {
 			state.budgets = action.payload;
 		},
+		setCurrentBudget: (state, action: PayloadAction<TBudget>) => {
+			state.currentBudget = action.payload;
+		}
 	},
 });
 
