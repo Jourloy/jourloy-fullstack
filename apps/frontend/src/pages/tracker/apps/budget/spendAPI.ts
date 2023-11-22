@@ -2,17 +2,21 @@ import BackendContext from "src/context/backend";
 
 export default class SpendAPI extends BackendContext {
 	constructor() {
-		super(`/api`);
+		super(`/spend`);
 	}
 
 	public async createSpend(data: {
-		name: string;
+		budgetId: number;
 		cost: number;
 		category: string;
 		description?: string;
 		date?: string;
 		repeat?: string;
 	}) {
-		return this.context.post(`/spend`, data);
+		return this.context.post(`/`, data);
+	}
+
+	public async deleteSpend(id: number) {
+		return this.context.delete(`/${id}`);
 	}
 }

@@ -3,9 +3,21 @@ import {useForm} from "@mantine/form";
 import SpendLogic from "../../../spendLogic";
 import {useState} from "react";
 import {DatePickerInput} from "@mantine/dates";
+import SpendAPI from "../../../spendAPI";
+import { showNotification } from "@mantine/notifications";
+import { store } from "src/store/store";
+import BudgetAPI from "../../../budgetAPI";
 
-export default function SpendForm() {
+type TProps = {
+	onClose: () => void;
+};
+
+export default function SpendForm({onClose}: TProps) {
+	const spendAPI = new SpendAPI();
+	const budgetAPI = new BudgetAPI();
+
 	const [planned, setPlanned] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	const form = useForm({
 		initialValues: {
@@ -18,6 +30,38 @@ export default function SpendForm() {
 	});
 
 	const categories = SpendLogic.getSpendCategory();
+
+	const onSubmit = () => {
+		setLoading(true);
+		spendAPI
+			.createSpend({
+				budgetId: store.getState().budgetReducer.currentBudget!.id,
+				cost: form.values.cost,
+				category: form.values.category,
+				description: form.values.description,
+				repeat: planned ? form.values.repeat : undefined,
+				date: planned ? form.values.date.toISOString() : undefined,
+			})
+			.then(() => {
+				budgetAPI.updateBudgetsInStore();
+				showNotification({
+					title: `Успех`,
+					message: `Расход успешно создан!`,
+					color: `green`,
+				});
+				onClose();
+			})
+			.catch(() => {
+				showNotification({
+					title: `Ошибка`,
+					message: `Произошла ошибка при создании расхода`,
+					color: `red`,
+				});
+			})
+			.finally(() => {
+				setLoading(false);
+			});
+	}
 
 	return (
 		<>
@@ -78,7 +122,7 @@ export default function SpendForm() {
 				</>
 			)}
 
-			<Button color={`black`}>
+			<Button color={`black`} onClick={onSubmit} loading={loading}>
 				Добавить
 			</Button>
 		</>

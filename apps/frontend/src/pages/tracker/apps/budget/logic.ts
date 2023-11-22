@@ -247,8 +247,7 @@ export default class BudgetLogic {
 	public getTodayBudget() {
 		// Filter out spends that have a date
 		const spends = this.budget.spends.filter(s => {
-			if (s.date) return false;
-			return true;
+			return !!s.date;
 		});
 
 		// Calculate the sum of costs
@@ -259,7 +258,6 @@ export default class BudgetLogic {
 	}
 
 	public getTodayLimit() {
-		console.log(this.budget.spends)
 		const spends = this.budget.spends.filter(s => {
 			if (s.date) return false;
 			return true;

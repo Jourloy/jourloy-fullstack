@@ -27,6 +27,7 @@ export default class BudgetAPI extends BackendContext {
 		const resp = await this.getBudgets();
 		if (resp.data) {
 			store.dispatch(budgetActions.forceUpdate(resp.data));
+			store.dispatch(budgetActions.setCurrentBudget(resp.data[0]));
 		}
 	}
 }

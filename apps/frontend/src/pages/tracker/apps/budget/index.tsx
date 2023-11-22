@@ -11,6 +11,8 @@ import SpendButton from "./components/spendButton/button";
 import DaysButton from "./components/daysButton/button";
 import BudgetFAQ from "./components/faq/faq";
 import CoffeButton from "src/components/inputs/CoffeButton";
+import {budgetActions} from "src/store/features/budget.slice";
+import SpendComponent from "./components/spend";
 
 export default function BudgetIndex() {
 	useDocumentTitle(`Бюджет`);
@@ -18,7 +20,10 @@ export default function BudgetIndex() {
 
 	const [budget, setBudget] = useState(store.getState().budgetReducer.budgets[0]);
 	store.subscribe(() => {
-		setBudget(store.getState().budgetReducer.budgets[0]);
+		const _budget = store.getState().budgetReducer.currentBudget;
+		if (_budget && _budget !== budget) {
+			setBudget(_budget);
+		}
 	});
 
 	const budgetLogic = new BudgetLogic(budget);
@@ -48,7 +53,9 @@ export default function BudgetIndex() {
 							const budget = store
 								.getState()
 								.budgetReducer.budgets.find(budget => budget.id.toString() === value);
-							if (budget) setBudget(budget);
+							if (budget) {
+								store.dispatch(budgetActions.setCurrentBudget(budget));
+							}
 						}}
 						allowDeselect={false}
 						className={`w-full`}
@@ -75,7 +82,7 @@ export default function BudgetIndex() {
 					<div className={`flex flex-row justify-between items-center`}>
 						<p className={`text-neutral-500`}>Осталось дней: {budget.daysLeft}</p>
 						<p className={`text-neutral-500`}>
-							Бюджет: {formatter.format(budgetLogic.getTodayBudget())}
+							Бюджет: {formatter.format(budget.todayBudget)}
 						</p>
 					</div>
 
@@ -102,7 +109,7 @@ export default function BudgetIndex() {
 						<Card withBorder className={`w-full`}>
 							<h3 className={`text-center text-[20px] text-red-500`}>
 								-{` `}
-								{formatter.format(budget.monthSpend)}
+								{formatter.format(budget.monthSpend * -1)}
 							</h3>
 						</Card>
 					</div>
@@ -117,7 +124,7 @@ export default function BudgetIndex() {
 					<Card withBorder className={`min-w-[200px]`}>
 						<h3 className={`text-center text-[20px] text-red-500`}>
 							-{` `}
-							{formatter.format(budget.monthSpend)}
+							{formatter.format(budget.monthSpend * -1)}
 						</h3>
 					</Card>
 					<Button color={`black`}>Выплатить</Button>
@@ -134,6 +141,8 @@ export default function BudgetIndex() {
 					labelPosition={`center`}
 					className={`col-span-12`}
 				/>
+
+				<SpendComponent budgetId={budget.id} />
 
 				<Divider className={`col-span-12`} />
 

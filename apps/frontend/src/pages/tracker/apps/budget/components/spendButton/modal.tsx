@@ -17,7 +17,7 @@ export default function SpendModal(props: TProps) {
 
 	const form = {
 		income: <></>,
-		spend: <SpendForm />,
+		spend: <SpendForm onClose={props.onClose} />,
 		credit: <></>,
 	};
 
